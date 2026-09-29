@@ -49,11 +49,11 @@ I = dict(
 PAGE = dict(
     file="index.html",
     lp="Maçonnerie",
-    title="Maçonnerie à Nantes et Saint-Nazaire | La Rénovation de vos rêves",
+    title="Maçonnerie en Loire-Atlantique | La Rénovation de vos rêves",
     desc="Entreprise de maçonnerie et gros œuvre en Loire-Atlantique et nord Vendée : murs, ouvertures, dalles, extensions, terrassement. Devis gratuit, un seul interlocuteur.",
     hero_img="img/hero-maison-pierre-extension.jpg",
     hero_alt="Maison en pierre agrandie par une extension à toit plat, en Loire-Atlantique",
-    h1='Maçonnerie générale et gros œuvre <em>de Nantes à Saint-Nazaire</em>',
+    h1='Maçonnerie générale et gros œuvre <em>en Loire-Atlantique</em>',
     sub="Murs, dalles, ouvertures dans les murs porteurs, extensions et surélévations, terrassement : nous prenons en charge vos travaux de maçonnerie en Loire-Atlantique et dans le nord de la Vendée, avec un seul interlocuteur du devis à la réception du chantier.",
     reassurance=[
         ("Devis gratuit et sans engagement", "DOC"),
@@ -112,7 +112,7 @@ PAGE = dict(
         ("Bohème", "J'ai fait appel à cette entreprise de rénovation-construction pour effectuer un agrandissement, je recommande vivement."),
     ],
     zone_eyebrow="Zone d'intervention",
-    zone_h2="De Nantes à Saint-Nazaire, jusqu'à Saint-Jean-de-Monts",
+    zone_h2="Toute la Loire-Atlantique et le nord de la Vendée",
     zone_lead="Installés à Sainte-Pazanne, nous intervenons dans toute la Loire-Atlantique et dans le nord de la Vendée, chez les particuliers, les professionnels et les collectivités.",
     zone_cols=[
         ("Nantes et agglomération", ["Nantes", "Rezé", "Saint-Herblain", "Vertou", "Bouguenais", "Clisson", "Nort-sur-Erdre", "Sainte-Pazanne", "Machecoul-Saint-Même"]),
