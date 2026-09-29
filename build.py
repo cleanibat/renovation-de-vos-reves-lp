@@ -67,7 +67,7 @@ PAGE = dict(
     services_lead="Maçonnerie neuve ou reprise sur l'existant, pour les particuliers, les professionnels et les collectivités.",
     services=[
         ("WALL", "Murs et élévation", "Élévation de murs en parpaings, briques ou béton cellulaire, murs de clôture, murets et piliers, en construction neuve comme en rénovation.", "Le plus demandé", "murs"),
-        ("DOOR", "Ouvertures dans les murs porteurs", "Création ou agrandissement d'une baie, d'une porte ou d'une fenêtre, pose de linteau ou de poutre métallique après étude de la structure.", "Étude structure", "ouverture"),
+        ("DOOR", "Ouvertures dans les murs porteurs", "Création ou agrandissement d'une baie, d'une porte ou d'une fenêtre, étaiement, pose de linteau ou de poutre métallique et reprise des finitions autour de l'ouverture.", "Mur porteur", "ouverture"),
         ("SLAB", "Dalles, chapes et fondations", "Fondations, dalle béton et chape pour une maison, un garage, une annexe ou une terrasse, avec préparation du sol adaptée au terrain.", "", "dalle"),
         ("HOUSEPLUS", "Extension et surélévation", "Agrandissement latéral ou surélévation de toiture, du gros œuvre à la finition, en continuité avec l'existant.", "Clé en main", "extension"),
         ("HOME", "Rénovation clé en main", "Rénovation complète de maisons, d'appartements et de granges : gros œuvre, second œuvre, isolation, électricité, plomberie, cuisines et salles de bains. Un seul interlocuteur du premier rendez-vous à la remise des clés.", "Du gros œuvre aux finitions", "renovation"),
@@ -131,7 +131,7 @@ PAGE = dict(
         ("Intervenez-vous sur les maisons anciennes en pierre ?",
          "Oui. Reprise de murs, rejointoiement, ouvertures dans des murs en pierre ou en moellons, extension en continuité avec l'existant : nous adaptons les matériaux et les techniques au bâti ancien, fréquent en Loire-Atlantique et sur le littoral."),
         ("Pouvez-vous ouvrir un mur porteur en toute sécurité ?",
-         "La création d'une ouverture dans un mur porteur passe par une étude de la structure, un étaiement pendant les travaux et la pose d'un linteau ou d'une poutre métallique dimensionnés pour reprendre les charges. Nous organisons ces étapes et les contrôles associés."),
+         "Oui. Nous étayons le mur pendant les travaux, ouvrons la maçonnerie, posons un linteau ou une poutre métallique adaptés aux charges à reprendre, puis reprenons les finitions. C'est un travail de maçonnerie courant sur les maisons anciennes comme récentes."),
         ("Que deviennent les gravats et les déchets de chantier ?",
          "L'évacuation des gravats et des matériaux de démolition est prévue dans le devis. Ils sont triés et déposés en déchetterie professionnelle ou en filière de recyclage. Le chantier est nettoyé à la fin des travaux."),
         ("Travaillez-vous pour les professionnels et les collectivités ?",
