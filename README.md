@@ -25,5 +25,4 @@ un enregistrement DNS CNAME vers `cleanibat.github.io`, puis mettre `SITE` à jo
 
 ## À faire valider par le client
 - Les photos proviennent de son site actuel (photos d'illustration, probablement de banque d'images) : remplacer par des photos de chantiers réels dès que possible.
-- Le vocabulaire des services (le client coordonne des artisans partenaires sur certains lots : vérifier les formulations « nous réalisons »).
 - Les témoignages sont repris de la page Témoignages de son site.

@@ -215,3 +215,13 @@ h1 em{font-style:normal;color:var(--gold)}
 .merci-inner .lead{margin-inline:auto;margin-bottom:2rem}
 .merci-icon{width:80px;height:80px;border-radius:50%;background:var(--gold);color:var(--navy-950);display:grid;place-items:center;margin:0 auto 1.5rem}
 .merci-icon svg{width:40px;height:40px}
+
+/* Carte pleine largeur (rénovation clé en main) */
+.card-wide{grid-column:1/-1;display:grid;grid-template-columns:64px 1fr auto;grid-template-rows:auto auto;column-gap:1.4rem;row-gap:.2rem;align-items:center;background:var(--navy-900);color:#fff;border-color:transparent;padding:1.8rem 1.8rem}
+.card-wide .card-icon{grid-row:1/3;background:var(--gold);color:var(--navy-950);margin:0;width:64px;height:64px}
+.card-wide .card-icon svg{width:32px;height:32px}
+.card-wide h3{grid-column:2;color:#fff;margin:0;padding-right:9rem}
+.card-wide p{grid-column:2;color:rgba(255,255,255,.8);margin:0}
+.card-wide .card-link{grid-column:3;grid-row:1/3;color:var(--gold);white-space:nowrap;margin:0}
+.card-wide .tag{background:rgba(255,255,255,.14);color:var(--gold)}
+@media (max-width:760px){.card-wide{grid-template-columns:52px 1fr;padding-top:3.2rem;align-items:start}.card-wide .card-icon{width:52px;height:52px;align-self:start}.card-wide h3{padding-right:0}.card-wide .card-link{grid-column:2;grid-row:3;white-space:normal;margin-top:.5rem}}

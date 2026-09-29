@@ -37,6 +37,7 @@ I = dict(
     WALL=ico('<path d="M3 5h18v14H3z"/><path d="M3 10h18M3 15h18M8 5v5M13 10v5M8 15v4M16 5v5M16 15v4"/>'),
     DOOR=ico('<path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16"/><path d="M2 21h20M9 21V9h6v12"/>'),
     SLAB=ico('<path d="M2 17l10 4 10-4"/><path d="M2 12l10 4 10-4"/><path d="M2 7l10 4 10-4-10-4z"/>'),
+    HOME=ico('<path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'),
     HOUSEPLUS=ico('<path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M12 12v6M9 15h6"/>'),
     DIGGER=ico('<path d="M2 20h20"/><path d="M4 20v-5h7l3-6h4l2 4v7"/><path d="M11 15V9l-3-3H5"/><circle cx="7" cy="20" r="0"/>'),
     TROWEL=ico('<path d="m3 3 9 9"/><path d="M12 12l-3 8 8-3 4-9-9 4z"/>'),
@@ -54,7 +55,7 @@ PAGE = dict(
     hero_img="img/hero-maison-pierre-extension.jpg",
     hero_alt="Maison en pierre agrandie par une extension à toit plat, en Loire-Atlantique",
     h1='Maçonnerie générale et gros œuvre <em>en Loire-Atlantique</em>',
-    sub="Murs, dalles, ouvertures dans les murs porteurs, extensions et surélévations, terrassement : nous prenons en charge vos travaux de maçonnerie en Loire-Atlantique et dans le nord de la Vendée, avec un seul interlocuteur du devis à la réception du chantier.",
+    sub="Murs, dalles, ouvertures dans les murs porteurs, extensions et surélévations, terrassement, rénovation clé en main : nous réalisons vos travaux de maçonnerie en Loire-Atlantique et dans le nord de la Vendée, avec un seul interlocuteur du devis à la réception du chantier.",
     reassurance=[
         ("Devis gratuit et sans engagement", "DOC"),
         ("Visite sur place et devis détaillé écrit", "PIN"),
@@ -68,7 +69,8 @@ PAGE = dict(
         ("WALL", "Murs et élévation", "Élévation de murs en parpaings, briques ou béton cellulaire, murs de clôture, murets et piliers, en construction neuve comme en rénovation.", "Le plus demandé", "murs"),
         ("DOOR", "Ouvertures dans les murs porteurs", "Création ou agrandissement d'une baie, d'une porte ou d'une fenêtre, pose de linteau ou de poutre métallique après étude de la structure.", "Étude structure", "ouverture"),
         ("SLAB", "Dalles, chapes et fondations", "Fondations, dalle béton et chape pour une maison, un garage, une annexe ou une terrasse, avec préparation du sol adaptée au terrain.", "", "dalle"),
-        ("HOUSEPLUS", "Extension et surélévation", "Agrandissement latéral ou surélévation de toiture, du gros œuvre à la finition, en continuité avec l'existant. Pilotage clé en main.", "Clé en main", "extension"),
+        ("HOUSEPLUS", "Extension et surélévation", "Agrandissement latéral ou surélévation de toiture, du gros œuvre à la finition, en continuité avec l'existant.", "Clé en main", "extension"),
+        ("HOME", "Rénovation clé en main", "Rénovation complète de maisons, d'appartements et de granges : gros œuvre, second œuvre, isolation, électricité, plomberie, cuisines et salles de bains. Un seul interlocuteur du premier rendez-vous à la remise des clés.", "Du gros œuvre aux finitions", "renovation"),
         ("DIGGER", "Terrassement et assainissement", "Préparation du terrain, fouilles pour fondations, tranchées et réseaux, mise en place ou remplacement de l'assainissement.", "", "terrassement"),
         ("TROWEL", "Reprise et rejointoiement", "Reprise de maçonnerie ancienne, rejointoiement de murs en pierre, finitions, démolition et préparation de chantier avant rénovation lourde.", "Bâti ancien", "reprise"),
     ],
@@ -76,8 +78,8 @@ PAGE = dict(
     why_h2="Une entreprise du bâtiment installée à Sainte-Pazanne depuis 8 ans",
     why_lead="Nous intervenons de la conception à la réception des travaux, sur des chantiers de maçonnerie neuve, d'agrandissement ou de rénovation lourde.",
     why=[
-        ("USER", "Un interlocuteur unique", "Vous n'avez qu'un seul contact : nous établissons le devis, planifions les interventions, coordonnons les corps de métier et suivons le chantier jusqu'à la réception."),
-        ("DOC", "Un devis détaillé et comparé", "Chaque poste est chiffré par écrit. Lorsque plusieurs entreprises interviennent, nous comparons les devis et vérifions leurs qualifications et assurances."),
+        ("USER", "Un interlocuteur unique", "Vous n'avez qu'un seul contact : nous établissons le devis, planifions les travaux, réalisons le chantier et le suivons jusqu'à la réception."),
+        ("DOC", "Un devis détaillé et écrit", "Chaque poste est chiffré par écrit après la visite sur place : matériaux, main-d'œuvre, évacuation des gravats. Vous savez ce que vous payez avant de signer."),
         ("SHIELD", "Conformité aux normes", "Nous contrôlons la qualité, la sécurité et la conformité des travaux aux normes en vigueur, à chaque étape du chantier."),
         ("CLOCK", "Joignables 7 j/7", "Du lundi au dimanche, de 7 h à 20 h, par téléphone ou par le formulaire. Devis gratuit, sans engagement."),
     ],
@@ -86,7 +88,7 @@ PAGE = dict(
     process=[
         ("Prise de contact", "Vous nous appelez ou remplissez le formulaire. Nous échangeons sur votre projet, vos contraintes et vos délais."),
         ("Visite et devis", "Nous nous déplaçons sur place pour mesurer, vérifier l'existant et l'accès, puis vous remettons un devis détaillé et gratuit."),
-        ("Planification", "Une fois le devis signé, nous planifions les travaux, les autorisations si nécessaire et l'intervention de chaque corps de métier."),
+        ("Planification", "Une fois le devis signé, nous planifions les travaux, préparons les autorisations si nécessaire et fixons avec vous la date de démarrage du chantier."),
         ("Chantier et réception", "Nous suivons le chantier régulièrement, contrôlons la qualité et la conformité, et vous livrons un chantier propre."),
     ],
     gallery_eyebrow="Réalisations",
@@ -133,12 +135,12 @@ PAGE = dict(
         ("Que deviennent les gravats et les déchets de chantier ?",
          "L'évacuation des gravats et des matériaux de démolition est prévue dans le devis. Ils sont triés et déposés en déchetterie professionnelle ou en filière de recyclage. Le chantier est nettoyé à la fin des travaux."),
         ("Travaillez-vous pour les professionnels et les collectivités ?",
-         "Oui. Nous accompagnons les particuliers, les entreprises (locaux, bureaux, commerces) et les collectivités dans leurs projets de construction, d'agrandissement et de rénovation, avec les mêmes étapes : visite, devis détaillé, planification, suivi et réception."),
+         "Oui. Nous réalisons pour les particuliers, les entreprises (locaux, bureaux, commerces) et les collectivités des travaux de construction, d'agrandissement et de rénovation, avec les mêmes étapes : visite, devis détaillé, planification, chantier et réception."),
     ],
     cta_eyebrow="Parlons de votre projet",
     cta_h2="Demandez votre devis gratuit",
     cta_lead="Décrivez vos travaux en quelques lignes, nous vous rappelons pour convenir d'une visite sur place.",
-    form_needs=["Murs, élévation, clôture", "Ouverture dans un mur porteur", "Dalle, chape ou fondations", "Extension ou surélévation", "Terrassement, assainissement", "Reprise de maçonnerie, rejointoiement", "Autre projet de maçonnerie"],
+    form_needs=["Murs, élévation, clôture", "Ouverture dans un mur porteur", "Dalle, chape ou fondations", "Extension ou surélévation", "Rénovation clé en main", "Terrassement, assainissement", "Reprise de maçonnerie, rejointoiement", "Autre projet"],
     form_msg_ph="Type de travaux, surface ou dimensions approximatives, état de l'existant, accès au chantier, délai souhaité…",
 )
 
@@ -267,7 +269,7 @@ def build_lp(p):
     ld = "".join(f'<script type="application/ld+json">{json.dumps(d, ensure_ascii=False)}</script>\n' for d in (ld_business, ld_faq))
 
     reass = "".join(f'<li>{I[ic]}<span>{t}</span></li>' for t, ic in p["reassurance"])
-    services = "".join(f'''<article class="card" id="{sid}">
+    services = "".join(f'''<article class="card{" card-wide" if sid == "renovation" else ""}" id="{sid}">
       <div class="card-icon">{I[ic]}</div>
       {f'<span class="tag">{tag}</span>' if tag else ''}
       <h3>{t}</h3><p>{d}</p>
