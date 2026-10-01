@@ -32,10 +32,10 @@ Production : https://www.larenovationdevosreves.com/ sur l'o2switch d'Aymeric (c
 
 ## Checklist de lancement
 1. Fait : hébergement, domaine, SSL, formulaire testé (`?test=1`), CRM alimenté.
-2. Supprimer les lignes de test dans le CRM.
-3. `GTM_ID` dans `build.py`, conteneur importé (`gtm_container.py`) et publié.
-4. Conversions Google Ads créées et importées dans GTM.
-5. Test de bout en bout du formulaire.
+2. Fait : GTM-T7MVZBMN sur toutes les pages, conteneur publié (Conversion Linker, formulaire envoyé, clic téléphone).
+3. Fait : conversions Google Ads « Demande de devis » et « Appel téléphonique » (ID 18427796482) reliées à GTM, testées.
+4. Supprimer les lignes de test dans le CRM.
+5. Construire la campagne Google Ads (une URL finale par page).
 
 ## Règles de rédaction fixées par Aymeric
 - Ne jamais sous-entendre de sous-traitance : l'entreprise réalise les travaux.
