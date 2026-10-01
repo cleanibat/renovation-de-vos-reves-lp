@@ -3,7 +3,7 @@
 header('Content-Type: application/json');
 date_default_timezone_set('Europe/Paris');
 
-$DEST     = 'contact@larenovationdevosreves.fr';                            // destinataire visible : le client
+$DEST     = 'contact@larenovationdevosreves.fr, renovationdevosreves@outlook.fr';                            // destinataire visible : le client
 $BCC      = 'aymeric@cleanibat.fr';                         // Aymeric toujours en copie CACHÉE, jamais en destinataire visible
 $FROM     = 'La Renovation de vos reves <no-reply@cleanibat.fr>';               // domaine avec SPF+DKIM valides, sinon Gmail supprime en silence
 $SUBJECT  = 'Nouvelle demande de devis - ';
