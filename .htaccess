@@ -18,3 +18,8 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
 # <IfModule LiteSpeed>
 #   CacheDisable public /
 # </IfModule>
+
+# Fichiers de configuration et de sauvegarde : jamais servis par le web
+<FilesMatch "^(agence_|leads_).*\.(json|csv)$">
+  Require all denied
+</FilesMatch>

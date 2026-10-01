@@ -18,6 +18,10 @@ Formulaire HTML classique envoyé à `contact.php` (e-mail au client, Aymeric en
 Sur GitHub Pages, le formulaire est illustratif : il ne fonctionne qu'une fois le site déployé sur un hébergement PHP.
 Test sans déranger le client : poster vers `contact.php?test=1` (envoi à Aymeric uniquement).
 
+## CRM
+Chaque demande est aussi envoyée par `contact.php` au CRM Google Sheets du client via Make (slug `renovation-de-vos-reves`).
+Le fichier `agence_renovation-de-vos-reves.json` (clé du client) se dépose sur le serveur, dans le dossier parent du docroot, jamais dans ce dépôt.
+
 ## Hébergement
 Le site actuel du client (larenovationdevosreves.fr) est sur un site builder (Cristal'ID / Nexylan) sans accès fichiers ni PHP.
 Pour la mise en production : sous-domaine (ex. `page.larenovationdevosreves.fr`) pointé vers un hébergement PHP, puis mettre `SITE` à jour dans `build.py`.
