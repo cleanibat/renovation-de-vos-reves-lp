@@ -1,7 +1,9 @@
-# Renommer en .htaccess à la mise en ligne (hébergement Apache / LiteSpeed)
 RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+# Domaine sans www -> www
+RewriteCond %{HTTP_HOST} ^larenovationdevosreves\.com$ [NC]
+RewriteRule ^(.*)$ https://www.larenovationdevosreves.com/$1 [R=301,L]
 
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
@@ -23,3 +25,9 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
 <FilesMatch "^(agence_|leads_).*\.(json|csv)$">
   Require all denied
 </FilesMatch>
+
+# Fichiers du dépôt qui ne doivent pas être servis
+<FilesMatch "^(build\.py|README\.md|\.nojekyll)$">
+  Require all denied
+</FilesMatch>
+RedirectMatch 404 /\.git

@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://cleanibat.github.io/renovation-de-vos-reves-lp/sitemap.xml
+Sitemap: https://www.larenovationdevosreves.com/sitemap.xml

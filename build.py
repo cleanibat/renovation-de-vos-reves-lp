@@ -6,7 +6,7 @@ import datetime, html, json, os
 
 # ---------------- Configuration ----------------
 GTM_ID = ""  # ex. "GTM-XXXXXXX" ; vide = snippet commenté
-SITE = "https://cleanibat.github.io/renovation-de-vos-reves-lp/"  # domaine final à remplacer (canonical, _next, sitemap)
+SITE = "https://www.larenovationdevosreves.com/"  # domaine de production (canonical, sitemap, Open Graph)
 BRAND = "La Rénovation de vos rêves"
 PHONE_DISPLAY = "06 40 23 85 43"
 PHONE_INTL = "+33640238543"
