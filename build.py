@@ -5,7 +5,7 @@ Usage : python3 build.py   →   index.html (maçonnerie), extension.html, terra
 import datetime, html, json, os
 
 # ---------------- Configuration ----------------
-GTM_ID = ""  # ex. "GTM-XXXXXXX" ; vide = snippet commenté
+GTM_ID = "GTM-T7MVZBMN"
 SITE = "https://www.larenovationdevosreves.com/"  # domaine de production (canonical, sitemap, Open Graph)
 BRAND = "La Rénovation de vos rêves"
 PHONE_DISPLAY = "06 40 23 85 43"
