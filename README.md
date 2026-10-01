@@ -22,13 +22,17 @@ Test sans déranger le client : poster vers `contact.php?test=1` (envoi à Aymer
 Chaque demande est aussi envoyée par `contact.php` au CRM Google Sheets du client via Make (slug `renovation-de-vos-reves`).
 Le fichier `agence_renovation-de-vos-reves.json` (clé du client) se dépose sur le serveur, dans le dossier parent du docroot, jamais dans ce dépôt.
 
-## Hébergement
-Le site actuel du client (larenovationdevosreves.fr) est sur un site builder (Cristal'ID / Nexylan) sans accès fichiers ni PHP.
-Pour la mise en production : sous-domaine (ex. `page.larenovationdevosreves.fr`) pointé vers un hébergement PHP, puis mettre `SITE` à jour dans `build.py`.
+## Hébergement et déploiement
+Production : https://www.larenovationdevosreves.com/ sur l'o2switch d'Aymeric (compte `riay4008`, serveur `clavier.o2switch.net`).
+- Docroot : `/home/riay4008/larenovationdevosreves.com/` (droits 755). Certificat Let's Encrypt émis via l'outil o2switch.
+- Déploiement : le dépôt est cloné dans `/home/riay4008/repos/renovation-de-vos-reves-lp`. Une tâche cron fait `git pull` puis `rsync` vers le docroot toutes les 5 minutes. Un push sur `main` est donc en ligne en 5 minutes au plus, sans clé ni mot de passe (o2switch bloque le SSH entrant depuis GitHub).
+- Journal des erreurs de déploiement : `/home/riay4008/logs/deploy_rdvr.log` (vide = tout va bien).
+- Configuration CRM : `/home/riay4008/agence_renovation-de-vos-reves.json` ; sauvegarde des demandes : `/home/riay4008/leads_renovation-de-vos-reves.csv`.
+- GitHub Pages reste un aperçu (formulaire inactif).
 
 ## Checklist de lancement
-1. Hébergement PHP et domaine final dans `SITE`, puis `python3 build.py`.
-2. `contact.php` : vérifier destinataire, expéditeur (SPF/DKIM) et chemin du CSV, test `?test=1`.
+1. Fait : hébergement, domaine, SSL, formulaire testé (`?test=1`), CRM alimenté.
+2. Supprimer les lignes de test dans le CRM.
 3. `GTM_ID` dans `build.py`, conteneur importé (`gtm_container.py`) et publié.
 4. Conversions Google Ads créées et importées dans GTM.
 5. Test de bout en bout du formulaire.
