@@ -225,3 +225,4 @@ h1 em{font-style:normal;color:var(--gold)}
 .card-wide .card-link{grid-column:3;grid-row:1/3;color:var(--gold);white-space:nowrap;margin:0}
 .card-wide .tag{background:rgba(255,255,255,.14);color:var(--gold)}
 @media (max-width:760px){.card-wide{grid-template-columns:52px 1fr;padding-top:3.2rem;align-items:start}.card-wide .card-icon{width:52px;height:52px;align-self:start}.card-wide h3{padding-right:0}.card-wide .card-link{grid-column:2;grid-row:3;white-space:normal;margin-top:.5rem}}
+.footer-lps{font-weight:600}

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Génère les landing pages Google Ads de La Rénovation de vos rêves (maçonnerie).
-Usage : python3 build.py   →   index.html, merci.html, sitemap.xml, robots.txt
+"""Génère les landing pages Google Ads de La Rénovation de vos rêves.
+Usage : python3 build.py   →   index.html (maçonnerie), extension.html, terrassement.html, merci.html, sitemap.xml, robots.txt
 """
 import datetime, html, json, os
 
@@ -11,7 +11,7 @@ BRAND = "La Rénovation de vos rêves"
 PHONE_DISPLAY = "06 40 23 85 43"
 PHONE_INTL = "+33640238543"
 EMAIL = "contact@larenovationdevosreves.fr"
-FORM_ACTION = f"https://formsubmit.co/{EMAIL}"
+FORM_ACTION = "contact.php"  # formulaire HTML classique traité par le script serveur (hébergement PHP requis)
 ADDRESS = "1A impasse des Gatines, 44680 Sainte-Pazanne"
 HOURS = "7 j/7, de 7 h à 20 h"
 SITE_CLIENT = "https://www.larenovationdevosreves.fr"
@@ -40,6 +40,11 @@ I = dict(
     HOME=ico('<path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>'),
     HOUSEPLUS=ico('<path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/><path d="M12 12v6M9 15h6"/>'),
     DIGGER=ico('<path d="M2 20h20"/><path d="M4 20v-5h7l3-6h4l2 4v7"/><path d="M11 15V9l-3-3H5"/><circle cx="7" cy="20" r="0"/>'),
+    LAYERS=ico('<path d="M3 21h18"/><path d="M5 21V11h14v10"/><path d="M3 11 12 4l9 7"/><path d="M5 16h14"/>'),
+    GARAGE=ico('<path d="M3 21V9l9-5 9 5v12"/><path d="M7 21v-8h10v8"/><path d="M7 17h10"/>'),
+    PIPE=ico('<path d="M2 8h6v8H2z"/><path d="M16 8h6v8h-6z"/><path d="M8 10h8M8 14h8"/>'),
+    DROP=ico('<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>'),
+    POOL=ico('<path d="M2 18c2 0 2-1.5 4-1.5S8 18 10 18s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M7 14V6a2 2 0 0 1 4 0M13 14V6a2 2 0 0 1 4 0M7 10h6"/>'),
     TROWEL=ico('<path d="m3 3 9 9"/><path d="M12 12l-3 8 8-3 4-9-9 4z"/>'),
     SHIELD=ico('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>'),
     STAR='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>',
@@ -54,8 +59,9 @@ PAGE = dict(
     desc="Entreprise de maçonnerie et gros œuvre en Loire-Atlantique et nord Vendée : murs, ouvertures, dalles, extensions, terrassement. Devis gratuit, un seul interlocuteur.",
     hero_img="img/hero-maison-pierre-extension.jpg",
     hero_alt="Maison en pierre agrandie par une extension à toit plat, en Loire-Atlantique",
+    hero_eyebrow="Loire-Atlantique · Littoral et presqu'île · Nord Vendée",
     h1='Maçonnerie générale et gros œuvre <em>en Loire-Atlantique</em>',
-    sub="Murs, dalles, ouvertures dans les murs porteurs, extensions et surélévations, terrassement, rénovation clé en main : nous réalisons vos travaux de maçonnerie en Loire-Atlantique et dans le nord de la Vendée, avec un seul interlocuteur du devis à la réception du chantier.",
+    sub="Murs, dalles, ouvertures dans les murs porteurs, extensions et surélévations, terrassement, rénovation clé en main : nous réalisons vos travaux de maçonnerie en Loire-Atlantique, sur le littoral et la presqu'île, et dans le nord de la Vendée, avec un seul interlocuteur du devis à la réception du chantier.",
     reassurance=[
         ("Devis gratuit et sans engagement", "DOC"),
         ("Visite sur place et devis détaillé écrit", "PIN"),
@@ -114,11 +120,11 @@ PAGE = dict(
         ("Bohème", "J'ai fait appel à cette entreprise de rénovation-construction pour effectuer un agrandissement, je recommande vivement."),
     ],
     zone_eyebrow="Zone d'intervention",
-    zone_h2="Toute la Loire-Atlantique et le nord de la Vendée",
-    zone_lead="Installés à Sainte-Pazanne, nous intervenons dans toute la Loire-Atlantique et dans le nord de la Vendée, chez les particuliers, les professionnels et les collectivités.",
+    zone_h2="Loire-Atlantique, littoral et presqu'île, nord de la Vendée",
+    zone_lead="Installés à Sainte-Pazanne, nous intervenons dans toute la Loire-Atlantique, sur le littoral et la presqu'île guérandaise, et dans le nord de la Vendée, chez les particuliers, les professionnels et les collectivités.",
     zone_cols=[
         ("Nantes et agglomération", ["Nantes", "Rezé", "Saint-Herblain", "Vertou", "Bouguenais", "Clisson", "Nort-sur-Erdre", "Sainte-Pazanne", "Machecoul-Saint-Même"]),
-        ("Littoral et presqu'île", ["Saint-Nazaire", "Guérande", "La Baule-Escoublac", "Pornichet", "Saint-Brevin-les-Pins", "Pornic", "La Bernerie-en-Retz", "La Plaine-sur-Mer", "Saint-Michel-Chef-Chef"]),
+        ("Littoral et presqu'île", ["Saint-Nazaire", "Guérande", "La Baule-Escoublac", "Pornichet", "Saint-Brevin-les-Pins", "Pornic", "La Bernerie-en-Retz", "La Plaine-sur-Mer", "Saint-Michel-Chef-Chef", "Le Pouliguen", "Le Croisic", "Batz-sur-Mer", "La Turballe"]),
         ("Nord Vendée", ["Saint-Jean-de-Monts", "Noirmoutier-en-l'Île", "Challans", "Saint-Hilaire-de-Riez", "Beauvoir-sur-Mer"]),
     ],
     faq_eyebrow="Questions fréquentes",
@@ -143,6 +149,121 @@ PAGE = dict(
     form_needs=["Murs, élévation, clôture", "Ouverture dans un mur porteur", "Dalle, chape ou fondations", "Extension ou surélévation", "Rénovation clé en main", "Terrassement, assainissement", "Reprise de maçonnerie, rejointoiement", "Autre projet"],
     form_msg_ph="Type de travaux, surface ou dimensions approximatives, état de l'existant, accès au chantier, délai souhaité…",
 )
+
+RENO_CARD = PAGE["services"][-1]
+
+# ---------------- Contenu de la LP Extension et surélévation ----------------
+EXTENSION = dict(PAGE,
+    file="extension.html",
+    lp="Extension",
+    title="Extension de maison en Loire-Atlantique | La Rénovation de vos rêves",
+    desc="Extension de maison, surélévation, garage ou annexe en Loire-Atlantique et nord Vendée. Du gros œuvre aux finitions, un seul interlocuteur. Devis gratuit.",
+    hero_img="img/hero-extension-maison.jpg",
+    hero_alt="Maison agrandie par une extension avec terrasse, en Loire-Atlantique",
+    h1='Extension et surélévation de maison <em>en Loire-Atlantique</em>',
+    sub="Extension de plain-pied, surélévation, garage ou annexe : nous réalisons votre agrandissement du gros œuvre aux finitions, en continuité avec votre maison, en Loire-Atlantique, sur le littoral et la presqu'île, et dans le nord de la Vendée.",
+    services_eyebrow="Nos travaux d'agrandissement",
+    services_h2="Agrandir votre maison, du gros œuvre aux finitions",
+    services_lead="Une pièce de vie, une chambre, un étage ou un garage en plus : nous construisons votre agrandissement et le raccordons à l'existant.",
+    services=[
+        ("HOUSEPLUS", "Extension de plain-pied", "Agrandissement latéral ou sur l'arrière de la maison : pièce de vie, suite parentale, cuisine ouverte ou bureau, à toit plat ou à toiture traditionnelle.", "Le plus demandé", "plain-pied"),
+        ("LAYERS", "Surélévation de maison", "Création d'un étage ou rehausse de la toiture pour gagner des mètres carrés sans réduire le terrain, avec dépose et reprise de la couverture.", "Gain de surface", "surelevation"),
+        ("GARAGE", "Garage et annexe", "Construction d'un garage accolé ou indépendant, d'un atelier, d'une dépendance ou d'un studio de jardin.", "", "garage"),
+        ("SLAB", "Fondations et dalle", "Terrassement, fondations et dalle béton de l'extension, adaptés au terrain et raccordés aux réseaux de la maison.", "", "fondations"),
+        ("DOOR", "Ouverture vers l'existant", "Création de l'ouverture entre la maison et l'extension : étaiement, pose de linteau ou de poutre métallique, reprise des finitions.", "Mur porteur", "ouverture"),
+        ("TROWEL", "Couverture et finitions", "Couverture, menuiseries extérieures, isolation, enduits, sols et raccords intérieurs : l'extension est livrée terminée.", "Clé en main", "finitions"),
+        RENO_CARD,
+    ],
+    why_lead="Nous intervenons de la conception à la réception des travaux, sur des chantiers d'extension, de surélévation et de construction d'annexes.",
+    gallery=[
+        ("img/extension-maison.jpg", "Extension contemporaine accolée à une maison"),
+        ("img/extension-bois-maison-pierre.jpg", "Extension à toit plat sur une maison en pierre"),
+        ("img/maison-pierre-jardin.jpg", "Maison en pierre avec son jardin"),
+        ("img/mur-pierre-interieur.jpg", "Pièce de vie ouverte sur un mur en pierre apparente"),
+    ],
+    faq=[
+        ("Faut-il un permis de construire pour une extension ?",
+         "Cela dépend de la surface créée et de la commune. En règle générale, une déclaration préalable de travaux suffit jusqu'à 20 m², ou jusqu'à 40 m² en zone urbaine couverte par un plan local d'urbanisme. Au-delà, un permis de construire est nécessaire, et le recours à un architecte devient obligatoire si la surface totale de la maison dépasse 150 m² après travaux. Nous vous indiquons la démarche à suivre lors de la visite."),
+        ("Combien coûte une extension ou une surélévation ?",
+         "Le prix dépend de la surface, du type d'agrandissement (plain-pied ou étage), des matériaux, du niveau de finition et de l'accès au chantier. Nous nous déplaçons avant de chiffrer : le devis est gratuit, détaillé poste par poste, et sans engagement."),
+        ("Peut-on rester dans la maison pendant les travaux ?",
+         "Pour une extension de plain-pied, oui dans la plupart des cas : le gros œuvre se fait à l'extérieur et l'ouverture vers la maison est réalisée en fin de chantier. Pour une surélévation, la toiture est déposée par étapes et protégée ; nous voyons avec vous lors de la visite les périodes où certaines pièces ne seront pas utilisables."),
+        ("Ma maison peut-elle être surélevée ?",
+         "Cela dépend des murs et des fondations existants, de la charpente et des règles d'urbanisme de votre commune (hauteur maximale). Nous regardons ces points sur place lors de la première visite et vous disons ce qui est réalisable."),
+        ("Combien de temps durent les travaux ?",
+         "La durée dépend de la surface et du niveau de finition. Le planning du chantier, avec la date de démarrage et les grandes étapes, vous est remis avec le devis."),
+        ("L'extension sera-t-elle assortie à ma maison ?",
+         "Oui. Nous reprenons les matériaux, les enduits et les pentes de toiture de l'existant, ou proposons un contraste assumé (toit plat, bardage) selon votre souhait et ce que permet le règlement d'urbanisme."),
+    ],
+    cta_lead="Décrivez votre projet d'agrandissement en quelques lignes, nous vous rappelons pour convenir d'une visite sur place.",
+    form_needs=["Extension de plain-pied", "Surélévation", "Garage ou annexe", "Extension et rénovation de l'existant", "Rénovation clé en main", "Autre projet"],
+    form_msg_ph="Surface souhaitée, usage de la pièce, type de maison, accès au terrain, délai souhaité…",
+)
+
+# ---------------- Contenu de la LP Terrassement ----------------
+TERRASSEMENT = dict(PAGE,
+    file="terrassement.html",
+    lp="Terrassement",
+    title="Terrassement en Loire-Atlantique | La Rénovation de vos rêves",
+    desc="Terrassement de maison, garage, extension ou piscine, fouilles, tranchées, réseaux et assainissement en Loire-Atlantique et nord Vendée. Devis gratuit.",
+    hero_img="img/hero-terrassement-piscine.jpg",
+    hero_alt="Jardin aménagé avec piscine et terrasse après terrassement",
+    h1='Terrassement et assainissement <em>en Loire-Atlantique</em>',
+    sub="Préparation de terrain, fouilles et fondations, tranchées et réseaux, assainissement, terrassement de piscine : nous réalisons vos travaux de terrassement en Loire-Atlantique, sur le littoral et la presqu'île, et dans le nord de la Vendée.",
+    reassurance=[
+        ("Devis gratuit et sans engagement", "DOC"),
+        ("Visite sur place et devis détaillé écrit", "PIN"),
+        ("Un seul interlocuteur du début à la fin", "USER"),
+        ("Terres évacuées, terrain rendu propre", "BROOM"),
+    ],
+    services_eyebrow="Nos travaux de terrassement",
+    services_h2="Préparer votre terrain avant de construire",
+    services_lead="Pour une maison, un garage, une extension, une piscine ou une mise aux normes de l'assainissement, chez les particuliers, les professionnels et les collectivités.",
+    services=[
+        ("DIGGER", "Terrassement de maison, garage ou extension", "Décapage de la terre végétale, mise à niveau et plateforme prête à recevoir les fondations de votre construction.", "Le plus demandé", "plateforme"),
+        ("SLAB", "Fouilles et fondations", "Fouilles en rigole ou en pleine masse, coulage des fondations et de la dalle béton à la suite du terrassement.", "", "fouilles"),
+        ("PIPE", "Tranchées et réseaux", "Tranchées pour l'eau, l'électricité, les télécoms et les eaux pluviales, pose des gaines et des regards, remblaiement.", "", "reseaux"),
+        ("DROP", "Assainissement", "Mise en place ou remplacement d'un assainissement individuel, raccordement au tout-à-l'égout, gestion des eaux pluviales.", "Mise aux normes", "assainissement"),
+        ("POOL", "Terrassement de piscine", "Creusement du bassin, évacuation des terres, préparation du fond de fouille et des abords avant la pose ou la construction de la piscine.", "", "piscine"),
+        ("TROWEL", "Démolition et évacuation", "Démolition d'ouvrages existants, enlèvement des gravats et des terres, remise en état du terrain en fin de chantier.", "", "demolition"),
+        RENO_CARD,
+    ],
+    why_lead="Nous intervenons de la préparation du terrain à la réception des travaux, sur des chantiers de terrassement, d'assainissement et de gros œuvre.",
+    process=[
+        ("Prise de contact", "Vous nous appelez ou remplissez le formulaire. Nous échangeons sur votre projet, votre terrain et vos délais."),
+        ("Visite et devis", "Nous nous déplaçons sur place pour voir le terrain, la pente, la nature du sol et l'accès, puis vous remettons un devis détaillé et gratuit."),
+        ("Planification", "Une fois le devis signé, nous planifions les travaux, préparons les démarches si nécessaire et fixons avec vous la date de démarrage."),
+        ("Chantier et réception", "Nous réalisons le terrassement, évacuons les terres et vous rendons un terrain propre, prêt pour la suite des travaux."),
+    ],
+    gallery_h2="Aménagements réalisés",
+    gallery_lead="",
+    before_after=[],
+    gallery=[
+        ("img/hero-terrassement-piscine.jpg", "Piscine et terrasse dans un jardin aménagé"),
+        ("img/piscine-terrasse-bois.jpg", "Piscine avec terrasse en bois"),
+        ("img/facade-pierre-allee.jpg", "Allée dallée le long d'une façade en pierre"),
+        ("img/apres-maison.jpg", "Extension et terrasse sur une maison en pierre"),
+    ],
+    faq=[
+        ("Faut-il une autorisation pour des travaux de terrassement ?",
+         "Un terrassement lié à une construction est couvert par le permis de construire ou la déclaration préalable du projet. Pour l'assainissement individuel, le service public d'assainissement non collectif (SPANC) de votre commune doit valider le projet puis contrôler l'installation. Nous vous indiquons la démarche à suivre lors de la visite."),
+        ("Combien coûte un terrassement ?",
+         "Le prix dépend du volume de terre à déplacer, de la nature du sol, de la pente, de l'accès au terrain et de l'évacuation des terres. Nous nous déplaçons avant de chiffrer : le devis est gratuit, détaillé poste par poste, et sans engagement."),
+        ("Mon terrain est en pente ou difficile d'accès, pouvez-vous intervenir ?",
+         "Oui. Nous regardons sur place la pente, la largeur du passage et la portance du sol, et adaptons le matériel et l'organisation du chantier à votre terrain."),
+        ("Que deviennent les terres et les gravats ?",
+         "Les terres excavées sont réutilisées sur place en remblai lorsque c'est possible, ou évacuées vers une filière adaptée. Les gravats de démolition sont triés et déposés en déchetterie professionnelle. L'évacuation est prévue dans le devis."),
+        ("Quelle est la meilleure période pour terrasser ?",
+         "Un terrassement se fait toute l'année, mais un sol sec facilite le travail et limite les ornières. Après de fortes pluies, nous pouvons décaler le démarrage de quelques jours pour préserver votre terrain."),
+        ("Travaillez-vous pour les professionnels et les collectivités ?",
+         "Oui. Nous réalisons des travaux de terrassement, de réseaux et d'assainissement pour les particuliers, les entreprises et les collectivités, avec les mêmes étapes : visite, devis détaillé, planification, chantier et réception."),
+    ],
+    cta_lead="Décrivez votre terrain et votre projet en quelques lignes, nous vous rappelons pour convenir d'une visite sur place.",
+    form_needs=["Terrassement pour maison, garage ou extension", "Fouilles et fondations", "Tranchées et réseaux", "Assainissement", "Terrassement de piscine", "Démolition, évacuation", "Autre projet"],
+    form_msg_ph="Type de projet, surface ou volume approximatif, pente, accès au terrain, délai souhaité…",
+)
+
+PAGES = [PAGE, EXTENSION, TERRASSEMENT]
 
 # ---------------- Blocs communs ----------------
 def gtm_head():
@@ -211,6 +332,7 @@ def footer():
     <div>
       <img src="img/logo-renovation-de-vos-reves.png" alt="{BRAND}" width="513" height="164" class="footer-logo" loading="lazy">
       <p class="footer-role">Entreprise du bâtiment · Gros œuvre, maçonnerie, rénovation et construction</p>
+      <p class="footer-lps"><a href="index.html">Maçonnerie</a> · <a href="extension.html">Extension et surélévation</a> · <a href="terrassement.html">Terrassement</a></p>
       <p><a href="{SITE_CLIENT}" rel="noopener">larenovationdevosreves.fr</a> · <a href="{FACEBOOK}" rel="noopener" class="fb">{I['FB']}Facebook</a></p>
     </div>
     <div>
@@ -236,17 +358,13 @@ def footer():
 def form(p):
     opts = "".join(f'<option value="{html.escape(o)}">{html.escape(o)}</option>' for o in p["form_needs"])
     return f'''<form id="devisForm" class="form" action="{FORM_ACTION}" method="POST">
-  <input type="hidden" name="_subject" value="Nouvelle demande de devis – {p['lp']}">
-  <input type="hidden" name="_template" value="table">
-  <input type="hidden" name="_captcha" value="false">
-  <input type="hidden" name="_next" value="{SITE}merci.html?lp={p['lp'].lower().replace('ç','c')}">
   <input type="hidden" name="Source" value="LP {p['lp']}">
   <input type="text" name="_honey" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
   <div class="grid-2">
     <label>Nom et prénom<input type="text" name="Nom" required autocomplete="name" placeholder="Jean Dupont"></label>
     <label>Téléphone<input type="tel" name="Téléphone" required autocomplete="tel" placeholder="06 12 34 56 78"></label>
-    <label>E-mail<input type="email" name="E-mail" required autocomplete="email" placeholder="jean.dupont@exemple.fr"></label>
-    <label>Commune du chantier<input type="text" name="Commune" required placeholder="Nantes, Saint-Nazaire, Guérande…"></label>
+    <label>E-mail<input type="email" name="Email" required autocomplete="email" placeholder="jean.dupont@exemple.fr"></label>
+    <label>Commune du chantier<input type="text" name="Localité" required autocomplete="address-level2" placeholder="Nantes, Saint-Nazaire, Guérande…"></label>
   </div>
   <label>Votre besoin<select name="Besoin" required><option value="" disabled selected>Choisir…</option>{opts}</select></label>
   <label>Décrivez votre projet (facultatif)<textarea name="Message" rows="4" placeholder="{html.escape(p['form_msg_ph'])}"></textarea></label>
@@ -299,7 +417,7 @@ def build_lp(p):
   <img class="hero-bg" src="{p['hero_img']}" alt="{p['hero_alt']}" width="1600" height="900" fetchpriority="high">
   <div class="wrap hero-inner">
     <div class="hero-text">
-      <span class="eyebrow light">Loire-Atlantique · Nord Vendée</span>
+      <span class="eyebrow light">{p['hero_eyebrow']}</span>
       <h1>{p['h1']}</h1>
       <p class="hero-sub">{p['sub']}</p>
       <div class="hero-ctas">
@@ -349,9 +467,9 @@ def build_lp(p):
     <div class="section-head center">
       <span class="eyebrow gold">{p['gallery_eyebrow']}</span>
       <h2>{p['gallery_h2']}</h2>
-      <p class="lead">{p['gallery_lead']}</p>
+      {f"<p class='lead'>{p['gallery_lead']}</p>" if p['gallery_lead'] else ""}
     </div>
-    <div class="ba-grid">{ba}</div>
+    {f'<div class="ba-grid">{ba}</div>' if ba else ""}
     <div class="gallery">{gal}</div>
   </div>
 </section>
@@ -425,8 +543,10 @@ def build_merci():
 
 # ---------------- Écriture ----------------
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-open(PAGE["file"], "w", encoding="utf-8").write(build_lp(PAGE))
+for p in PAGES:
+    open(p["file"], "w", encoding="utf-8").write(build_lp(p))
 open("merci.html", "w", encoding="utf-8").write(build_merci())
 open("robots.txt", "w").write(f"User-agent: *\nAllow: /\nSitemap: {SITE}sitemap.xml\n")
-open("sitemap.xml", "w").write(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>{SITE}{PAGE["file"]}</loc><lastmod>{TODAY}</lastmod></url>\n</urlset>\n')
-print("OK :", PAGE["file"], "merci.html, robots.txt, sitemap.xml —", "GTM " + (GTM_ID or "absent (commenté)"))
+urls = "".join(f'  <url><loc>{SITE}{p["file"]}</loc><lastmod>{TODAY}</lastmod></url>\n' for p in PAGES)
+open("sitemap.xml", "w").write(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urls}</urlset>\n')
+print("OK :", ", ".join(p["file"] for p in PAGES), "+ merci.html, robots.txt, sitemap.xml —", "GTM " + (GTM_ID or "absent (commenté)"))
