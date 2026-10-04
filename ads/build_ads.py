@@ -3,16 +3,16 @@
 Usage : python3 ads/build_ads.py  →  ads/1-campagne-google-ads-editor.csv et ads/2-composants-google-ads-editor.csv
 Format : tabulations, UTF-16 (format natif de Google Ads Editor). Import : Compte > Importer > À partir d'un fichier.
 """
-import csv, io, math, os, sys
+import csv, io, json, math, os, sys
 
 SITE = "https://www.larenovationdevosreves.com/"
 CAMPAIGN = "Search - Rénovation de vos rêves - Loire-Atlantique"
 BUDGET_MENSUEL = 500
 BUDGET_JOUR = math.floor(BUDGET_MENSUEL / 30.4 * 100) / 100   # Google plafonne le mois à 30,4 × budget quotidien : 16,44 € → 499,78 €
 STATUS = "Enabled"                                     # « Paused » pour importer sans diffuser
-# Rayon unique calculé sur les coordonnées officielles (geo.api.gouv.fr) des communes de la zone :
-# 48,9 km suffisent pour inclure Clisson, Le Croisic, La Turballe, Vallet et Saint-Hilaire-de-Riez ; +2 km de marge.
-GEO = (47.1720, -1.9020, 51)
+# Rayons qui se chevauchent, calculés par ads/zone_rayons.py sur les 152 communes du secteur (geo.api.gouv.fr) :
+# chaque commune du secteur est couverte avec 2,5 km de marge, la population hors secteur touchée est minimisée.
+GEO = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rayons.json")))   # [[lat, lon, rayon_km], ...]
 
 GROUPS = [
   dict(name="Maçonnerie", url=SITE, path=("maconnerie", "devis-gratuit"),
@@ -102,7 +102,7 @@ def row(**kw):
 row(Campaign_Type="Search", Networks="Google search", Budget=f"{BUDGET_JOUR:.2f}", Budget_type="Daily",
     Bid_Strategy_Type="Maximize conversions", Languages="fr", Targeting_method="Location of presence",
     Exclusion_method="Location of presence", Campaign_Status=STATUS)
-row(Location=f"({GEO[2]}km:{GEO[0]:.6f}:{GEO[1]:.6f})")
+for lat, lon, r in GEO: row(Location=f"({r}km:{lat:.6f}:{lon:.6f})")
 for n in NEGATIVES: row(Keyword=n, Criterion_Type="Campaign negative")
 for g in GROUPS:
     row(Ad_Group=g["name"], Ad_Group_Status="Enabled")
@@ -135,4 +135,4 @@ write(os.path.join(here, "1-campagne-google-ads-editor.csv"), H1, rows)
 write(os.path.join(here, "2-composants-google-ads-editor.csv"), H2, rows2)
 kw = sum(len(g["phrase"]) + len(g["exact"]) for g in GROUPS)
 print(f"OK : budget {BUDGET_JOUR:.2f} €/jour (plafond mensuel {BUDGET_JOUR*30.4:.2f} €), {len(GROUPS)} groupes, {kw} mots-clés, "
-      f"{len(NEGATIVES)} négatifs, {len(GROUPS)} annonces, rayon {GEO[2]} km, {len(rows)} + {len(rows2)} lignes")
+      f"{len(NEGATIVES)} négatifs, {len(GROUPS)} annonces, {len(GEO)} rayons, {len(rows)} + {len(rows2)} lignes")
