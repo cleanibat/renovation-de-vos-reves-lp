@@ -45,13 +45,13 @@ GROUPS = [
   dict(name="Terrassement", url=SITE + "terrassement.html", path=("terrassement", "devis-gratuit"),
     phrase=["terrassement", "entreprise de terrassement", "terrassement nantes", "terrassement loire atlantique",
             "terrassement maison", "terrassement piscine", "terrassier", "assainissement individuel", "installation fosse septique",
-            "raccordement assainissement", "viabilisation terrain", "terrassement saint nazaire", "terrassement pornic"],
+            "décaissement terrain", "nivellement terrain", "terrassement saint nazaire", "terrassement pornic"],
     exact=["entreprise de terrassement", "terrassement nantes", "terrassement loire atlantique", "terrassement maison"],
     headlines=["Terrassement Loire-Atlantique", "Entreprise de terrassement", "Terrassement de maison", "Terrassement de piscine",
-               "Assainissement individuel", "Raccordement tout-à-l'égout", "Tranchées et réseaux", "Fouilles et fondations",
+               "Assainissement individuel", "Décaissement de terrain", "Nivellement de terrain", "Fouilles et fondations",
                "Démolition et évacuation", "Devis gratuit et détaillé", "Visite et devis gratuits", "Terrassement Nantes, Pornic",
                "Terres évacuées", "Un seul interlocuteur", "Joignables 7 j/7"],
-    descriptions=["Plateforme, fouilles, tranchées, assainissement : nous préparons votre terrain.",
+    descriptions=["Plateforme, décaissement, fouilles, assainissement : nous préparons votre terrain.",
                   "Visite sur place pour voir le sol, la pente et l'accès, puis devis écrit gratuit.",
                   "Terres et gravats évacués, terrain rendu propre, prêt pour la suite du chantier.",
                   "Intervention en Loire-Atlantique, sur le littoral, la presqu'île et le nord Vendée."]),
@@ -61,11 +61,12 @@ NEGATIVES = ["emploi", "recrutement", "salaire", "formation", "cap", "bac pro", 
              "cours", "tuto", "tutoriel", "soi même", "soi-même", "diy", "bricolage", "leroy merlin", "castorama", "brico",
              "location", "louer", "mini pelle", "occasion", "pdf", "wikipedia", "wiki", "définition", "logiciel", "kit", "plan",
              "dessin", "outil", "jeu", "minecraft", "franc maçon", "franc-maçonnerie", "loge", "fiche métier", "assurance",
-             "auto entrepreneur", "sous traitance", "sous-traitance", "matériaux"]
+             "auto entrepreneur", "sous traitance", "sous-traitance", "matériaux",
+             "égout", "tout à l'égout", "vrd", "viabilisation", "voirie"]
 
 SITELINKS = [("Maçonnerie générale", "Murs, dalles, ouvertures", "Neuf et reprise de l'existant", SITE),
              ("Extension et surélévation", "Plain-pied, étage, garage", "Du gros œuvre aux finitions", SITE + "extension.html"),
-             ("Terrassement", "Plateforme, fouilles, réseaux", "Assainissement individuel", SITE + "terrassement.html"),
+             ("Terrassement", "Plateforme, fouilles, décaissement", "Assainissement individuel", SITE + "terrassement.html"),
              ("Demander un devis", "Visite sur place gratuite", "Devis écrit et détaillé", SITE + "#devis")]
 CALLOUTS = ["Devis gratuit", "Visite sur place", "Joignables 7 j/7", "Un seul interlocuteur", "8 ans d'expérience",
             "Chantier rendu propre", "Particuliers et pros", "Rénovation clé en main"]
