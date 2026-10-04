@@ -45,7 +45,7 @@ GROUPS = [
   dict(name="Terrassement", url=SITE + "terrassement.html", path=("terrassement", "devis-gratuit"),
     phrase=["terrassement", "entreprise de terrassement", "terrassement nantes", "terrassement loire atlantique",
             "terrassement maison", "terrassement piscine", "terrassier", "assainissement individuel", "installation fosse septique",
-            "raccordement tout à l'égout", "viabilisation terrain", "terrassement saint nazaire", "terrassement pornic"],
+            "raccordement assainissement", "viabilisation terrain", "terrassement saint nazaire", "terrassement pornic"],
     exact=["entreprise de terrassement", "terrassement nantes", "terrassement loire atlantique", "terrassement maison"],
     headlines=["Terrassement Loire-Atlantique", "Entreprise de terrassement", "Terrassement de maison", "Terrassement de piscine",
                "Assainissement individuel", "Raccordement tout-à-l'égout", "Tranchées et réseaux", "Fouilles et fondations",
