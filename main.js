@@ -36,8 +36,19 @@
     }
     (window.dataLayer = window.dataLayer || []).push({ event: "consent_update", consent_state: g });
     granted = g === "granted";
-    if (granted) saveOrigin(); else { forgetOrigin(); st = cur; fillForms(); }
+    if (granted) saveOrigin(); else { forgetOrigin(); clearAdCookies(); st = cur; fillForms(); }
     showBanner(false);
+  }
+  /* Retrait du consentement : suppression des cookies Google Ads déjà déposés */
+  function clearAdCookies() {
+    var host = location.hostname.replace(/^www\./, "");
+    document.cookie.split(";").forEach(function (c) {
+      var n = c.split("=")[0].trim();
+      if (!/^(_gcl_|_gac_|_ga|FPGCL)/.test(n)) return;
+      ["", "; domain=" + host, "; domain=." + host, "; domain=" + location.hostname].forEach(function (d) {
+        document.cookie = n + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/" + d;
+      });
+    });
   }
   document.addEventListener("click", function (e) {
     var t = e.target.closest ? e.target.closest("[data-consent],[data-consent-open]") : null;
