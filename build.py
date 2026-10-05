@@ -386,6 +386,30 @@ def img_name(path):
     return path.split("/")[-1].rsplit(".", 1)[0]
 
 # ---------------- Blocs communs ----------------
+CONSENT_KEY = "rdvr_consent"
+CONSENT_DAYS = 182  # choix conservé 6 mois (recommandation CNIL)
+
+def consent_default():
+    # Mode Consentement v2 : tout est refusé tant que le visiteur n'a pas accepté (choix mémorisé 6 mois)
+    return ("<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
+            "(function(){var c=null;try{c=JSON.parse(localStorage.getItem('%s')||'null')}catch(e){}"
+            "if(c&&(!c.ts||Date.now()-c.ts>%d*864e5))c=null;var g=c&&c.v==='granted'?'granted':'denied';"
+            "gtag('consent','default',{ad_storage:g,ad_user_data:g,ad_personalization:g,analytics_storage:g,"
+            "functionality_storage:'granted',security_storage:'granted',wait_for_update:500});"
+            "gtag('set','ads_data_redaction',g==='denied');})();</script>") % (CONSENT_KEY, CONSENT_DAYS)
+
+def cookie_banner():
+    return f'''<div class="cookie-banner" id="cookie-banner" role="dialog" aria-labelledby="cookie-title" hidden>
+  <div class="cookie-inner">
+    <p class="cookie-title" id="cookie-title">Cookies</p>
+    <p>Avec votre accord, nous utilisons des cookies Google Ads pour mesurer les demandes de devis et les appels issus de nos annonces, et pour savoir comment vous nous avez trouvés. Si vous refusez, aucun de ces cookies n'est déposé et le site fonctionne de la même façon. Votre choix est conservé 6 mois et modifiable à tout moment via « Gestion des cookies » en bas de page. <a href="{href('confidentialite.html')}#cookies">En savoir plus</a></p>
+    <div class="cookie-actions">
+      <button type="button" class="btn cookie-btn" data-consent="denied">Tout refuser</button>
+      <button type="button" class="btn cookie-btn" data-consent="granted">Tout accepter</button>
+    </div>
+  </div>
+</div>'''
+
 def gtm_head():
     s = "<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','%s');</script>" % (GTM_ID or "GTM-XXXXXXX")
     return "<!-- Google Tag Manager -->\n" + (s if GTM_ID else "<!-- " + s + " -->") + "\n<!-- End Google Tag Manager -->"
@@ -441,10 +465,10 @@ def head(title, desc, file, og_img="img/hero-maison-pierre-extension.jpg", extra
 <link rel="icon" href="img/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 {preload}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/outfit-latin-QGYvz_MV.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-latin-UcC73Fwr.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css?v={asset_v('style.css')}">
+{consent_default()}
 {gtm_head()}
 {extra_ld}
 </head>
@@ -510,9 +534,10 @@ def footer():
     </div>
   </div>
   <div class="wrap footer-bottom">
-    <p>© <span id="year">{YEAR}</span> {BRAND} · <a href="{href('mentions-legales.html')}">Mentions légales</a> · <a href="{href('confidentialite.html')}">Confidentialité</a></p>
+    <p>© <span id="year">{YEAR}</span> {BRAND} · <a href="{href('mentions-legales.html')}">Mentions légales</a> · <a href="{href('confidentialite.html')}">Confidentialité</a> · <button type="button" class="link-btn" data-consent-open>Gestion des cookies</button></p>
   </div>
 </footer>
+{cookie_banner()}
 <script src="main.js?v={asset_v('main.js')}" defer></script>
 </body>
 </html>
@@ -1056,8 +1081,14 @@ CONFID = f'''<h2>Données collectées</h2>
 <p>Ces données servent uniquement à répondre à votre demande, à vous recontacter pour organiser une visite et à établir votre devis. Elles ne sont ni vendues ni cédées. Elles sont traitées par {BRAND} et par ses prestataires techniques (hébergement du site, envoi des e-mails, outil de suivi des demandes).</p>
 <h2>Durée de conservation</h2>
 <p>Les données sont conservées pendant 3 ans à compter de notre dernier échange, sauf si un contrat de travaux est signé, auquel cas elles sont conservées le temps nécessaire à son exécution et aux obligations légales.</p>
-<h2>Mesure des annonces</h2>
-<p>Ce site utilise Google Tag Manager pour mesurer les demandes de devis et les appels issus des annonces Google Ads. Des cookies de mesure de Google peuvent être déposés à cette occasion.</p>
+<h2 id="cookies">Cookies et traceurs</h2>
+<p>Lors de votre première visite, un bandeau vous demande votre accord. Sans accord, aucun cookie publicitaire n'est déposé : Google Ads reçoit seulement des signaux sans cookie ni identifiant de clic, et le site fonctionne de la même façon. Vous pouvez changer d'avis à tout moment avec le lien <button type="button" class="link-btn" data-consent-open>Gestion des cookies</button>, présent en bas de chaque page.</p>
+<p><strong>Déposés uniquement avec votre accord :</strong></p>
+<ul>
+<li><strong>_gcl_au, _gcl_aw</strong> (Google Ads, 90 jours) : relier une demande de devis ou un appel à l'annonce qui l'a précédé, pour mesurer l'efficacité de nos annonces. Ces cookies sont déposés par Google via Google Tag Manager ; voir les <a href="https://policies.google.com/technologies/ads?hl=fr" rel="noopener">règles de Google</a>.</li>
+<li><strong>rdvr_origine</strong> (stockage local, 90 jours) : mémoriser la provenance de votre visite (annonce, moteur de recherche, autre site) pour l'associer à votre demande de devis si vous en envoyez une.</li>
+</ul>
+<p><strong>Nécessaire au fonctionnement :</strong> <strong>rdvr_consent</strong> (stockage local, 6 mois) enregistre votre choix sur les cookies.</p>
 <h2>Vos droits</h2>
 <p>Vous pouvez demander l'accès, la rectification ou la suppression de vos données, ou vous opposer à leur traitement, en écrivant à <a href="mailto:{EMAIL}">{EMAIL}</a>. Vous pouvez aussi adresser une réclamation à la CNIL (<a href="https://www.cnil.fr" rel="noopener">www.cnil.fr</a>).</p>'''
 

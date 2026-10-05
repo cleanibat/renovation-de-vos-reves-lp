@@ -19,7 +19,36 @@
     });
   });
 
-  /* Origine de la visite : modèle « dernier clic non direct », mémorisé 90 jours (fenêtre de conversion Google Ads).
+  /* Consentement aux cookies (Mode Consentement v2). Valeur par défaut posée dans le <head>, avant GTM. */
+  var CKEY = "rdvr_consent", CTTL = 182 * 864e5;
+  var consent = null;
+  try { consent = JSON.parse(localStorage.getItem(CKEY) || "null"); } catch (e) {}
+  if (consent && (!consent.ts || Date.now() - consent.ts > CTTL)) consent = null;
+  var granted = !!(consent && consent.v === "granted");
+  var banner = document.getElementById("cookie-banner");
+  function showBanner(on) { if (banner) banner.hidden = !on; }
+  function setConsent(v) {
+    try { localStorage.setItem(CKEY, JSON.stringify({ v: v, ts: Date.now() })); } catch (e) {}
+    var g = v === "granted" ? "granted" : "denied";
+    if (typeof window.gtag === "function") {
+      window.gtag("consent", "update", { ad_storage: g, ad_user_data: g, ad_personalization: g, analytics_storage: g });
+      window.gtag("set", "ads_data_redaction", g === "denied");
+    }
+    (window.dataLayer = window.dataLayer || []).push({ event: "consent_update", consent_state: g });
+    granted = g === "granted";
+    if (granted) saveOrigin(); else { forgetOrigin(); st = cur; fillForms(); }
+    showBanner(false);
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("[data-consent],[data-consent-open]") : null;
+    if (!t) return;
+    if (t.hasAttribute("data-consent-open")) { e.preventDefault(); showBanner(true); return; }
+    setConsent(t.getAttribute("data-consent"));
+  });
+  if (!consent) showBanner(true);
+
+  /* Origine de la visite : modèle « dernier clic non direct », mémorisé 90 jours (fenêtre de conversion Google Ads),
+     uniquement si le visiteur a accepté les cookies. Sans accord, seule la page en cours est prise en compte.
      - identifiant de clic (gclid, gbraid, wbraid, fbclid, msclkid) ou paramètres utm → nouvelle origine ;
      - arrivée depuis un autre site (moteur de recherche, lien) → nouvelle origine ;
      - navigation interne ou accès direct → on garde l'origine mémorisée. */
@@ -32,24 +61,32 @@
   try {
     if (document.referrer) {
       var h = new URL(document.referrer).hostname;
-      if (h && h.indexOf("larenovationdevosreves") === -1) ref = document.referrer.slice(0, 300);
+      if (h && h !== location.hostname && h.indexOf("larenovationdevosreves") === -1) ref = document.referrer.slice(0, 300);
     }
   } catch (e) {}
-  try { st = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { st = null; }
-  if (st && (!st.ts || Date.now() - st.ts > TTL)) st = null;
-  if (has || ref || !st) {
-    st = cur; st.referrer = ref; st.landing_page = location.pathname; st.ts = Date.now();
-    try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {}
+  cur.referrer = ref; cur.landing_page = location.pathname; cur.ts = Date.now();
+  if (granted) {
+    try { st = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { st = null; }
+    if (st && (!st.ts || Date.now() - st.ts > TTL)) st = null;
   }
-  /* Repli : identifiant de clic laissé par le Conversion Linker (cookie _gcl_aw), seulement pour un accès direct */
-  if (!st.gclid && !st.gbraid && !st.wbraid && !st.referrer && !st.utm_source) {
-    var m = document.cookie.match(/(?:^|; )_gcl_aw=([^;]+)/);
-    if (m) { var parts = decodeURIComponent(m[1]).split("."); if (parts.length >= 3) st.gclid = parts.slice(2).join("."); }
-  }
-  document.querySelectorAll("form").forEach(function (f) {
-    FIELDS.forEach(function (k) {
-      var i = f.querySelector('input[name="' + k + '"]');
-      if (i && st[k]) i.value = st[k];
+  if (has || ref || !st) st = cur;
+  function saveOrigin() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  function forgetOrigin() { try { localStorage.removeItem(KEY); } catch (e) {} }
+  if (granted) saveOrigin(); else forgetOrigin();
+  function fillForms() {
+    var o = st;
+    /* Repli : identifiant de clic laissé par le Conversion Linker (cookie _gcl_aw, posé seulement avec accord), pour un accès direct */
+    if (granted && !o.gclid && !o.gbraid && !o.wbraid && !o.referrer && !o.utm_source) {
+      var m = document.cookie.match(/(?:^|; )_gcl_aw=([^;]+)/);
+      if (m) { var parts = decodeURIComponent(m[1]).split("."); if (parts.length >= 3) o.gclid = parts.slice(2).join("."); }
+    }
+    document.querySelectorAll("form").forEach(function (f) {
+      FIELDS.forEach(function (k) {
+        var i = f.querySelector('input[name="' + k + '"]');
+        if (i) i.value = o[k] || "";
+      });
     });
-  });
+  }
+  fillForms();
+  document.addEventListener("submit", fillForms, true);
 })();

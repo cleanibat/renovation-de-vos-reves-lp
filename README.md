@@ -21,8 +21,14 @@ python3 build.py   # régénère toutes les pages, sitemap.xml et robots.txt
 - Données structurées : HomeAndConstructionBusiness, Service, FAQPage, BreadcrumbList. Sitemap et robots générés.
 - Ajouter une ville : une entrée dans `CITIES`/`MORE_CITIES` (+ `EXTRA` et les textes locaux), puis `python3 build.py`.
 
+## Cookies et consentement (CNIL, Mode Consentement v2)
+- Bandeau maison (pas d'outil tiers) : « Tout refuser » et « Tout accepter » au même niveau, choix conservé 6 mois dans `rdvr_consent`, lien « Gestion des cookies » en pied de page.
+- Dans le `<head>`, avant GTM : `gtag('consent','default', …)` refusé par défaut (ou accordé si choix mémorisé). Au clic : `consent update` + événement dataLayer `consent_update`.
+- Sans accord : pas de cookies Google Ads (_gcl_*), pas de `rdvr_origine` ; l'origine du lead n'est connue que si le formulaire est envoyé depuis la page d'arrivée.
+- Polices Outfit et Inter hébergées dans `fonts/` (aucun appel à Google Fonts).
+
 ## Origine des leads (Google Ads / SEO)
-`main.js` mémorise 90 jours la dernière origine non directe (gclid/gbraid/wbraid, fbclid, utm, référent) et remplit des champs cachés du formulaire.
+`main.js` mémorise 90 jours (si les cookies sont acceptés) la dernière origine non directe (gclid/gbraid/wbraid, fbclid, utm, référent) et remplit des champs cachés du formulaire.
 `contact.php` en déduit la Source du CRM : `Google Ads` (identifiant de clic ou utm google/cpc), `Meta Ads`, `SEO` (arrivée depuis un moteur de recherche sans identifiant publicitaire), `Autre` (autre site, utm), `Site` (accès direct).
 Le détail (page, gclid complet, moteur, page d'arrivée) va dans la colonne « Campagne ou page » et dans l'e-mail.
 

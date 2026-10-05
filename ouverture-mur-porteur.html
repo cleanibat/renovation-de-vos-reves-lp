@@ -21,10 +21,10 @@
 <link rel="icon" href="img/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=c56595dd">
+<link rel="preload" href="fonts/outfit-latin-QGYvz_MV.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-latin-UcC73Fwr.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=320f7f01">
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}(function(){var c=null;try{c=JSON.parse(localStorage.getItem('rdvr_consent')||'null')}catch(e){}if(c&&(!c.ts||Date.now()-c.ts>182*864e5))c=null;var g=c&&c.v==='granted'?'granted':'denied';gtag('consent','default',{ad_storage:g,ad_user_data:g,ad_personalization:g,analytics_storage:g,functionality_storage:'granted',security_storage:'granted',wait_for_update:500});gtag('set','ads_data_redaction',g==='denied');})();</script>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-T7MVZBMN');</script>
 <!-- End Google Tag Manager -->
@@ -130,9 +130,19 @@
     </div>
   </div>
   <div class="wrap footer-bottom">
-    <p>© <span id="year">2026</span> La Rénovation de vos rêves · <a href="mentions-legales">Mentions légales</a> · <a href="confidentialite">Confidentialité</a></p>
+    <p>© <span id="year">2026</span> La Rénovation de vos rêves · <a href="mentions-legales">Mentions légales</a> · <a href="confidentialite">Confidentialité</a> · <button type="button" class="link-btn" data-consent-open>Gestion des cookies</button></p>
   </div>
 </footer>
-<script src="main.js?v=b264f14e" defer></script>
+<div class="cookie-banner" id="cookie-banner" role="dialog" aria-labelledby="cookie-title" hidden>
+  <div class="cookie-inner">
+    <p class="cookie-title" id="cookie-title">Cookies</p>
+    <p>Avec votre accord, nous utilisons des cookies Google Ads pour mesurer les demandes de devis et les appels issus de nos annonces, et pour savoir comment vous nous avez trouvés. Si vous refusez, aucun de ces cookies n'est déposé et le site fonctionne de la même façon. Votre choix est conservé 6 mois et modifiable à tout moment via « Gestion des cookies » en bas de page. <a href="confidentialite#cookies">En savoir plus</a></p>
+    <div class="cookie-actions">
+      <button type="button" class="btn cookie-btn" data-consent="denied">Tout refuser</button>
+      <button type="button" class="btn cookie-btn" data-consent="granted">Tout accepter</button>
+    </div>
+  </div>
+</div>
+<script src="main.js?v=d6e21a59" defer></script>
 </body>
 </html>
