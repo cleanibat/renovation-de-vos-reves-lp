@@ -23,7 +23,7 @@ TODAY = datetime.date.today().isoformat()
 
 # ---------------- Icônes ----------------
 def ico(path, sw=2):
-    return f'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{path}</svg>'
+    return f'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="{sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{path}</svg>'
 
 I = dict(
     PHONE=ico('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>'),
@@ -49,8 +49,8 @@ I = dict(
     POOL=ico('<path d="M2 18c2 0 2-1.5 4-1.5S8 18 10 18s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M7 14V6a2 2 0 0 1 4 0M13 14V6a2 2 0 0 1 4 0M7 10h6"/>'),
     TROWEL=ico('<path d="m3 3 9 9"/><path d="M12 12l-3 8 8-3 4-9-9 4z"/>'),
     SHIELD=ico('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>'),
-    STAR='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>',
-    FB='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 22v-8h2.7l.4-3.2h-3.1V8.8c0-.9.3-1.6 1.6-1.6h1.7V4.4c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.3H7.4V14h2.8v8z"/></svg>',
+    STAR='<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>',
+    FB='<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M13.5 22v-8h2.7l.4-3.2h-3.1V8.8c0-.9.3-1.6 1.6-1.6h1.7V4.4c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.3H7.4V14h2.8v8z"/></svg>',
 )
 
 # ---------------- Contenu de la LP Maçonnerie ----------------
@@ -272,6 +272,10 @@ PAGES = [PAGE, EXTENSION, TERRASSEMENT]
 # pages département, titres « Service Ville (44) — … », maillage interne dense (villes voisines, autres services, pied de page).
 import math, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hashlib
+def asset_v(f):  # version du fichier dans l'URL : le navigateur recharge le CSS/JS dès qu'il change
+    return hashlib.md5(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), f), 'rb').read()).hexdigest()[:8]
+
 from seo_content import CITIES, GUIDES, SECTEUR_TXT
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -440,7 +444,7 @@ def head(title, desc, file, og_img="img/hero-maison-pierre-extension.jpg", extra
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v={asset_v('style.css')}">
 {gtm_head()}
 {extra_ld}
 </head>
@@ -509,7 +513,7 @@ def footer():
     <p>© <span id="year">{YEAR}</span> {BRAND} · <a href="{href('mentions-legales.html')}">Mentions légales</a> · <a href="{href('confidentialite.html')}">Confidentialité</a></p>
   </div>
 </footer>
-<script src="main.js" defer></script>
+<script src="main.js?v={asset_v('main.js')}" defer></script>
 </body>
 </html>
 '''
