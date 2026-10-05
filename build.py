@@ -391,13 +391,13 @@ CONSENT_DAYS = 182  # choix conservé 6 mois (recommandation CNIL)
 
 def consent_default():
     # Mode Consentement v2 (avancé) : cookies refusés tant que le visiteur n'a pas accepté (choix mémorisé 6 mois).
-    # Sans accord, Google reçoit des signaux sans cookie et l'identifiant de clic suit dans l'URL (url_passthrough).
+    # Sans accord, Google reçoit des signaux sans cookie et l'identifiant de clic suit dans les liens internes (main.js).
     return ("<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
             "(function(){var c=null;try{c=JSON.parse(localStorage.getItem('%s')||'null')}catch(e){}"
             "if(c&&(!c.ts||Date.now()-c.ts>%d*864e5))c=null;var g=c&&c.v==='granted'?'granted':'denied';"
             "gtag('consent','default',{ad_storage:g,ad_user_data:g,ad_personalization:g,analytics_storage:g,"
             "functionality_storage:'granted',security_storage:'granted',wait_for_update:500});"
-            "gtag('set','url_passthrough',true);})();</script>") % (CONSENT_KEY, CONSENT_DAYS)
+            "})();</script>") % (CONSENT_KEY, CONSENT_DAYS)
 
 def cookie_banner():
     return f'''<div class="cookie-banner" id="cookie-banner" role="dialog" aria-labelledby="cookie-title" hidden>

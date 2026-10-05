@@ -99,4 +99,21 @@
   }
   fillForms();
   document.addEventListener("submit", fillForms, true);
+
+  /* Passage d'URL (équivalent du url_passthrough de Google) : sans accord, aucun cookie, donc l'identifiant de clic
+     et les utm présents dans l'adresse suivent dans les liens internes. Google Ads et le formulaire les relisent sur la page suivante. */
+  function passthrough(e) {
+    if (granted || !has) return;
+    var a = e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a || a.target === "_blank") return;
+    var u;
+    try { u = new URL(a.getAttribute("href"), location.href); } catch (err) { return; }
+    if (u.hostname !== location.hostname || !/^https?:$/.test(u.protocol)) return;
+    if (u.pathname === location.pathname && u.hash) return;
+    PARAMS.forEach(function (k) { if (cur[k] && !u.searchParams.get(k)) u.searchParams.set(k, cur[k]); });
+    a.href = u.toString();
+  }
+  document.addEventListener("mousedown", passthrough, true);
+  document.addEventListener("touchstart", passthrough, { capture: true, passive: true });
+  document.addEventListener("keydown", function (e) { if (e.key === "Enter") passthrough(e); }, true);
 })();

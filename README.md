@@ -24,7 +24,7 @@ python3 build.py   # régénère toutes les pages, sitemap.xml et robots.txt
 ## Cookies et consentement (CNIL, Mode Consentement v2)
 - Bandeau maison (pas d'outil tiers) : « Tout refuser » et « Tout accepter » au même niveau, choix conservé 6 mois dans `rdvr_consent`, lien « Gestion des cookies » en pied de page.
 - Dans le `<head>`, avant GTM : `gtag('consent','default', …)` refusé par défaut (ou accordé si choix mémorisé). Au clic : `consent update` + événement dataLayer `consent_update`.
-- Mode avancé, réglage « minimum CNIL » choisi par Aymeric : sans accord, pas de cookies Google Ads (_gcl_*) ni de `rdvr_origine`, mais signaux sans cookie avec identifiant de clic (pas d'`ads_data_redaction`) et `url_passthrough` (le gclid suit dans les URL internes, ce qui garde aussi la Source du CRM).
+- Mode avancé, réglage « minimum CNIL » choisi par Aymeric : sans accord, pas de cookies Google Ads (_gcl_*) ni de `rdvr_origine`, mais signaux sans cookie avec identifiant de clic (pas d'`ads_data_redaction`) et passage d'URL fait par `main.js` (le gclid et les utm suivent dans les liens internes, ce qui garde aussi la Source du CRM ; l'option url_passthrough de Google n'est pas gérée par la balise Conversion Linker de GTM).
 - Polices Outfit et Inter hébergées dans `fonts/` (aucun appel à Google Fonts).
 
 ## Origine des leads (Google Ads / SEO)
