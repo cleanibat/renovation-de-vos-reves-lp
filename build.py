@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Génère les landing pages Google Ads de La Rénovation de vos rêves.
-Usage : python3 build.py   →   index.html (maçonnerie), extension.html, terrassement.html, merci.html, sitemap.xml, robots.txt
+"""Génère le site de La Rénovation de vos rêves : pages de service (aussi utilisées par Google Ads), pages locales,
+guides, zones, pages légales, sitemap et robots. Contenus SEO dans seo_content.py.
+Usage : python3 build.py
 """
 import datetime, html, json, os
 
@@ -57,7 +58,7 @@ PAGE = dict(
     file="index.html",
     lp="Maçonnerie",
     title="Maçonnerie en Loire-Atlantique | La Rénovation de vos rêves",
-    desc="Entreprise de maçonnerie et gros œuvre en Loire-Atlantique et nord Vendée : murs, ouvertures, dalles, extensions, terrassement. Devis gratuit, un seul interlocuteur.",
+    desc="Entreprise de maçonnerie et gros œuvre en Loire-Atlantique et nord Vendée : murs, ouvertures, dalles, extensions, terrassement. Devis gratuit.",
     hero_img="img/hero-maison-pierre-extension.jpg",
     hero_alt="Maison en pierre agrandie par une extension à toit plat, en Loire-Atlantique",
     hero_eyebrow="Loire-Atlantique · Littoral et presqu'île · Nord Vendée",
@@ -254,7 +255,7 @@ TERRASSEMENT = dict(PAGE,
          "Oui. Nous regardons sur place la pente, la largeur du passage et la portance du sol, et adaptons le matériel et l'organisation du chantier à votre terrain."),
         ("Que deviennent les terres et les gravats ?",
          "Les terres excavées sont réutilisées sur place en remblai lorsque c'est possible, ou évacuées vers une filière adaptée. Les gravats de démolition sont triés et déposés en déchetterie professionnelle. L'évacuation est prévue dans le devis."),
-        ("Quelle est la meilleure période pour terrasser ?",
+        ("À quelle période terrasser ?",
          "Un terrassement se fait toute l'année, mais un sol sec facilite le travail et limite les ornières. Après de fortes pluies, nous pouvons décaler le démarrage de quelques jours pour préserver votre terrain."),
         ("Travaillez-vous pour les professionnels et les collectivités ?",
          "Oui. Nous réalisons des travaux de terrassement et d'assainissement individuel pour les particuliers, les entreprises et les collectivités, avec les mêmes étapes : visite, devis détaillé, planification, chantier et réception."),
@@ -266,6 +267,120 @@ TERRASSEMENT = dict(PAGE,
 
 PAGES = [PAGE, EXTENSION, TERRASSEMENT]
 
+# ---------------- SEO : villes, guides, données géographiques ----------------
+# Structure inspirée d'artipierre.fr (positionné en moins de 7 jours) : adresses propres sans .html, pages service × ville,
+# pages département, titres « Service Ville (44) — … », maillage interne dense (villes voisines, autres services, pied de page).
+import math, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from seo_content import CITIES, GUIDES, SECTEUR_TXT
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+_COMMUNES = json.load(open(os.path.join(HERE, "ads", "communes.json"), encoding="utf-8"))
+_RAYONS = json.load(open(os.path.join(HERE, "ads", "rayons.json"), encoding="utf-8"))
+_IDX = {(c["nom"], c["dep"]): c for c in _COMMUNES}
+
+def _dist(a, b):
+    la1, lo1 = map(math.radians, a); la2, lo2 = map(math.radians, b)
+    h = math.sin((la2 - la1) / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2
+    return 12742 * math.asin(math.sqrt(h))
+
+def _in_zone(c):
+    return any(_dist((c["lat"], c["lon"]), (la, lo)) <= r for la, lo, r in _RAYONS)
+
+_HOME = _IDX[("Sainte-Pazanne", "44")]
+CITY_BY_NAME = {c["nom"]: c for c in CITIES}
+for c in CITIES:
+    x = _IDX[(c["nom"], c["dep"])]
+    c["km"] = round(_dist((_HOME["lat"], _HOME["lon"]), (x["lat"], x["lon"])))
+    c["xy"] = (x["lat"], x["lon"])
+    for radius in (12, 16, 20):
+        near = [y for y in _COMMUNES if y["dep"] in ("44", "85") and y is not x and _in_zone(y)
+                and _dist((x["lat"], x["lon"]), (y["lat"], y["lon"])) <= radius]
+        if len(near) >= 5: break
+    c["near"] = [y["nom"] for y in sorted(near, key=lambda y: -y["pop"])[:8]]
+    # villes de notre liste les plus proches (pour le maillage « Autour de … »)
+    c["near_pages"] = [o["nom"] for o in sorted((o for o in CITIES if o is not c), key=lambda o: _dist(c["xy"] if "xy" in c else (x["lat"], x["lon"]), (_IDX[(o["nom"], o["dep"])]["lat"], _IDX[(o["nom"], o["dep"])]["lon"])))[:6]]
+
+SECTEURS = ["Nantes et agglomération", "Vignoble nantais", "Estuaire et Brière", "Littoral et presqu'île", "Pays de Retz", "Nord Vendée"]
+DEPTS = {"44": ("Loire-Atlantique", "macon-loire-atlantique"), "85": ("Vendée", "macon-vendee")}
+
+# Services déclinés par ville : préfixe d'adresse, libellé, page de service
+SVC = {
+    "macon": dict(prefix="macon", label="Maçon", service_file="index.html", service_name="Maçonnerie générale"),
+    "extension": dict(prefix="extension-maison", label="Extension de maison", service_file="extension-maison.html", service_name="Extension et surélévation"),
+    "terrassement": dict(prefix="terrassement", label="Terrassement", service_file="terrassement.html", service_name="Terrassement"),
+}
+def city_file(c, svc="macon"):
+    return f"{SVC[svc]['prefix']}-{c['slug']}.html"
+
+for g in GUIDES:
+    g["file"] = f"{g['slug']}.html"
+
+# ---------------- Adresses propres ----------------
+# Les fichiers restent en .html sur le serveur ; .htaccess sert /page → page.html et redirige /page.html → /page.
+# Exceptions : index (→ /), extension.html et terrassement.html (adresses finales Google Ads, jamais redirigées).
+CANONICAL_OVERRIDE = {"index.html": "", "extension.html": "extension-maison"}
+
+def slug_of(file):
+    if file in CANONICAL_OVERRIDE: return CANONICAL_OVERRIDE[file]
+    return file[:-5] if file.endswith(".html") else file
+
+def href(file):
+    s = slug_of(file)
+    return "./" if s == "" else s
+
+def url_of(file):
+    return SITE + slug_of(file)
+
+def city_link(nom, svc="macon"):
+    c = CITY_BY_NAME.get(nom)
+    return f'<a href="{href(city_file(c, svc))}">{html.escape(nom)}</a>' if c else html.escape(nom)
+
+# ---------------- Images : WebP + repli JPEG ----------------
+def make_webp():
+    try:
+        from PIL import Image
+    except ImportError:
+        return
+    for f in os.listdir(os.path.join(HERE, "img")):
+        if not f.endswith(".jpg"): continue
+        src = os.path.join(HERE, "img", f); base = src[:-4]
+        if not os.path.exists(base + ".webp") or os.path.getmtime(base + ".webp") < os.path.getmtime(src):
+            Image.open(src).convert("RGB").save(base + ".webp", "WEBP", quality=78, method=6)
+        if not os.path.exists(base + "-800.webp"):
+            im = Image.open(src).convert("RGB")
+            if im.width > 800:
+                im.resize((800, round(im.height * 800 / im.width)), Image.LANCZOS).save(base + "-800.webp", "WEBP", quality=76, method=6)
+
+_SIZES = {}
+def _size(name, w, h):
+    if name not in _SIZES:
+        try:
+            from PIL import Image
+            _SIZES[name] = Image.open(os.path.join(HERE, "img", name + ".jpg")).size
+        except Exception:
+            _SIZES[name] = (w, h)
+    return _SIZES[name]
+
+def pic(name, alt, w=1200, h=800, cls="", lazy=True, hero=False):
+    w, h = _size(name, w, h)
+    if hero and os.path.exists(os.path.join(HERE, "img", f"{name}-800.webp")):
+        source = f'<source type="image/webp" srcset="img/{name}-800.webp 800w, img/{name}.webp {w}w" sizes="100vw">'
+    else:
+        source = f'<source type="image/webp" srcset="img/{name}.webp">'
+    attrs = f' class="{cls}"' if cls else ""
+    load = ' loading="lazy" decoding="async"' if lazy else ' fetchpriority="high"'
+    return f'<picture>{source}<img src="img/{name}.jpg" alt="{html.escape(alt)}" width="{w}" height="{h}"{attrs}{load}></picture>'
+
+def preload_hero(name):
+    w = _size(name, 1200, 800)[0]
+    if os.path.exists(os.path.join(HERE, "img", f"{name}-800.webp")):
+        return f'<link rel="preload" as="image" type="image/webp" href="img/{name}.webp" imagesrcset="img/{name}-800.webp 800w, img/{name}.webp {w}w" imagesizes="100vw" fetchpriority="high">'
+    return f'<link rel="preload" as="image" type="image/webp" href="img/{name}.webp" fetchpriority="high">'
+
+def img_name(path):
+    return path.split("/")[-1].rsplit(".", 1)[0]
+
 # ---------------- Blocs communs ----------------
 def gtm_head():
     s = "<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','%s');</script>" % (GTM_ID or "GTM-XXXXXXX")
@@ -275,9 +390,30 @@ def gtm_body():
     s = '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=%s" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>' % (GTM_ID or "GTM-XXXXXXX")
     return s if GTM_ID else "<!-- " + s + " -->"
 
-def head(title, desc, canonical, og_img, extra_ld="", noindex=True, preload=None):
-    robots = "noindex, follow" if noindex else "index, follow"
-    pre = f'<link rel="preload" as="image" href="{preload}" fetchpriority="high">' if preload else ""
+def ld_json(*objs):
+    return "".join(f'<script type="application/ld+json">{json.dumps(o, ensure_ascii=False)}</script>\n' for o in objs if o)
+
+def ld_breadcrumb(items):
+    crumbs = [("Accueil", "index.html")] + items
+    return {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": i + 1, "name": n, "item": url_of(f)} for i, (n, f) in enumerate(crumbs)]}
+
+LD_BUSINESS_ID = SITE + "#entreprise"
+def ld_business(area=None):
+    return {
+        "@context": "https://schema.org", "@type": "HomeAndConstructionBusiness", "@id": LD_BUSINESS_ID, "name": BRAND,
+        "url": SITE, "telephone": PHONE_INTL, "email": EMAIL, "image": SITE + "img/hero-maison-pierre-extension.jpg",
+        "logo": SITE + "img/logo-renovation-de-vos-reves.png",
+        "address": {"@type": "PostalAddress", "streetAddress": "1A impasse des Gatines", "postalCode": "44680", "addressLocality": "Sainte-Pazanne", "addressRegion": "Pays de la Loire", "addressCountry": "FR"},
+        "geo": {"@type": "GeoCoordinates", "latitude": round(_HOME["lat"], 4), "longitude": round(_HOME["lon"], 4)},
+        "areaServed": area or ([{"@type": "AdministrativeArea", "name": "Loire-Atlantique"}, {"@type": "AdministrativeArea", "name": "Vendée"}] + [{"@type": "City", "name": c["nom"]} for c in CITIES]),
+        "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"], "opens": "07:00", "closes": "20:00"}],
+        "sameAs": [SITE_CLIENT, FACEBOOK], "taxID": SIRET.replace(" ", ""),
+    }
+
+def head(title, desc, file, og_img="img/hero-maison-pierre-extension.jpg", extra_ld="", noindex=False, preload=""):
+    robots = "noindex, follow" if noindex else "index, follow, max-image-preview:large"
+    canonical = url_of(file)
     return f'''<!DOCTYPE html>
 <html lang="fr-FR">
 <head>
@@ -289,14 +425,18 @@ def head(title, desc, canonical, og_img, extra_ld="", noindex=True, preload=None
 <link rel="canonical" href="{canonical}">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="{BRAND}">
 <meta property="og:title" content="{html.escape(title)}">
 <meta property="og:description" content="{html.escape(desc)}">
 <meta property="og:image" content="{SITE}{og_img}">
 <meta property="og:url" content="{canonical}">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#141e4f">
+<meta name="geo.region" content="FR-44">
+<meta name="geo.placename" content="Sainte-Pazanne">
 <link rel="icon" href="img/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
-{pre}
+{preload}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -308,47 +448,65 @@ def head(title, desc, canonical, og_img, extra_ld="", noindex=True, preload=None
 {gtm_body()}
 '''
 
-def header():
+NAV = [("index.html", "Maçonnerie"), ("extension-maison.html", "Extension"), ("terrassement.html", "Terrassement"),
+       ("zones-intervention.html", "Zones"), ("conseils.html", "Conseils")]
+
+def header(current="", devis="#devis"):
+    nav = "".join(f'<a href="{href(f)}"{" aria-current=" + chr(34) + "page" + chr(34) if f == current else ""}>{t}</a>' for f, t in NAV)
     return f'''<header class="header">
   <div class="wrap">
-    <a class="logo" href="#top" aria-label="{BRAND}"><img src="img/logo-clair.png" alt="{BRAND}" width="513" height="164"></a>
+    <a class="logo" href="./" aria-label="{BRAND}, accueil"><img src="img/logo-clair.png" alt="{BRAND}" width="513" height="164"></a>
+    <nav class="main-nav" aria-label="Navigation principale">{nav}</nav>
     <div class="header-cta">
       <a class="header-phone" href="tel:{PHONE_INTL}">{I['PHONE']}<span><small>Appelez-nous</small>{PHONE_DISPLAY}</span></a>
-      <a class="btn btn-primary" href="#devis">Devis gratuit</a>
+      <a class="btn btn-primary" href="{devis}">Devis gratuit</a>
     </div>
   </div>
 </header>
 '''
 
-def mobile_bar():
+def mobile_bar(devis="#devis"):
     return f'''<div class="mobile-bar">
   <a href="tel:{PHONE_INTL}" class="btn btn-outline">{I['PHONE']}Appeler</a>
-  <a href="#devis" class="btn btn-primary">Devis gratuit</a>
+  <a href="{devis}" class="btn btn-primary">Devis gratuit</a>
 </div>
 '''
 
+def breadcrumb(items, wrap=True):
+    crumbs = [("Accueil", "index.html")] + list(items[:-1])
+    parts = "".join(f'<li><a href="{href(f)}">{html.escape(n)}</a></li>' for n, f in crumbs)
+    return f'<nav class="breadcrumb{" wrap" if wrap else ""}" aria-label="Fil d\'Ariane"><ol>{parts}<li aria-current="page">{html.escape(items[-1][0])}</li></ol></nav>'
+
 def footer():
+    city_cols = ""
+    for sect in SECTEURS:
+        cs = [c for c in CITIES if c["secteur"] == sect]
+        city_cols += f'<p class="footer-sect">{sect}</p><p class="footer-cities">' + " · ".join(f'<a href="{href(city_file(c))}">{html.escape(c["nom"])}</a>' for c in cs) + "</p>"
+    guides = "".join(f'<li><a href="{href(g["file"])}">{html.escape(g["title"])}</a></li>' for g in GUIDES)
     return f'''<footer class="footer">
   <div class="wrap footer-grid">
     <div>
       <img src="img/logo-renovation-de-vos-reves.png" alt="{BRAND}" width="513" height="164" class="footer-logo" loading="lazy">
-      <p class="footer-role">Entreprise du bâtiment · Gros œuvre, maçonnerie, rénovation et construction</p>
-      <p class="footer-lps"><a href="index.html">Maçonnerie</a> · <a href="extension.html">Extension et surélévation</a> · <a href="terrassement.html">Terrassement</a></p>
-      <p><a href="{SITE_CLIENT}" rel="noopener">larenovationdevosreves.fr</a> · <a href="{FACEBOOK}" rel="noopener" class="fb">{I['FB']}Facebook</a></p>
+      <p class="footer-role">Entreprise du bâtiment à Sainte-Pazanne · Maçonnerie, gros œuvre, extension, terrassement et rénovation clé en main</p>
+      <p><a href="tel:{PHONE_INTL}">{PHONE_DISPLAY}</a><br><a href="mailto:{EMAIL}">{EMAIL}</a><br>{HOURS}</p>
+      <p>{ADDRESS}<br>SIRET {SIRET}</p>
+      <p><a href="{FACEBOOK}" rel="noopener" class="fb">{I['FB']}Facebook</a></p>
     </div>
     <div>
-      <h3>Contact</h3>
-      <p><a href="tel:{PHONE_INTL}">{PHONE_DISPLAY}</a><br><a href="mailto:{EMAIL}">{EMAIL}</a></p>
-      <p>{HOURS}</p>
+      <h3>Nos services</h3>
+      <ul class="footer-list"><li><a href="./">Maçonnerie générale</a></li><li><a href="{href('extension-maison.html')}">Extension et surélévation</a></li><li><a href="{href('terrassement.html')}">Terrassement et assainissement</a></li><li><a href="./#renovation">Rénovation clé en main</a></li></ul>
+      <h3>Départements</h3>
+      <ul class="footer-list"><li><a href="{href('macon-loire-atlantique.html')}">Maçon en Loire-Atlantique</a></li><li><a href="{href('macon-vendee.html')}">Maçon en Vendée</a></li></ul>
+      <h3>Conseils</h3>
+      <ul class="footer-list">{guides}</ul>
     </div>
-    <div>
-      <h3>Adresse</h3>
-      <p>{ADDRESS}</p>
-      <p>SIRET {SIRET}</p>
+    <div class="footer-zones">
+      <h3><a href="{href('zones-intervention.html')}">Zones d'intervention</a></h3>
+      {city_cols}
     </div>
   </div>
   <div class="wrap footer-bottom">
-    <p>© <span id="year">{YEAR}</span> {BRAND} · <a href="{SITE_CLIENT}/mentions" rel="noopener">Mentions légales</a></p>
+    <p>© <span id="year">{YEAR}</span> {BRAND} · <a href="{href('mentions-legales.html')}">Mentions légales</a> · <a href="{href('confidentialite.html')}">Confidentialité</a></p>
   </div>
 </footer>
 <script src="main.js" defer></script>
@@ -356,66 +514,124 @@ def footer():
 </html>
 '''
 
+ATTR_FIELDS = ["gclid", "gbraid", "wbraid", "fbclid", "msclkid", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "referrer", "landing_page"]
+
 def form(p):
     opts = "".join(f'<option value="{html.escape(o)}">{html.escape(o)}</option>' for o in p["form_needs"])
+    hidden = "".join(f'<input type="hidden" name="{k}" value="">' for k in ATTR_FIELDS)
+    city_val = f' value="{html.escape(p["city_value"])}"' if p.get("city_value") else ""
     return f'''<form id="devisForm" class="form" action="{FORM_ACTION}" method="POST">
-  <input type="hidden" name="Source" value="LP {p['lp']}">
+  <input type="hidden" name="Source" value="{html.escape(p.get('source_label', 'LP ' + p['lp']))}">
+  {hidden}
   <input type="text" name="_honey" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
   <div class="grid-2">
     <label>Nom et prénom<input type="text" name="Nom" required autocomplete="name" placeholder="Jean Dupont"></label>
     <label>Téléphone<input type="tel" name="Téléphone" required autocomplete="tel" placeholder="06 12 34 56 78"></label>
     <label>E-mail<input type="email" name="Email" required autocomplete="email" placeholder="jean.dupont@exemple.fr"></label>
-    <label>Commune du chantier<input type="text" name="Localité" required autocomplete="address-level2" placeholder="Nantes, Saint-Nazaire, Guérande…"></label>
+    <label>Commune du chantier<input type="text" name="Localité" required autocomplete="address-level2" placeholder="Nantes, Saint-Nazaire, Guérande…"{city_val}></label>
   </div>
   <label>Votre besoin<select name="Besoin" required><option value="" disabled selected>Choisir…</option>{opts}</select></label>
   <label>Décrivez votre projet (facultatif)<textarea name="Message" rows="4" placeholder="{html.escape(p['form_msg_ph'])}"></textarea></label>
   <button type="submit" class="btn btn-primary btn-block" data-sending="Envoi…">{I['ARROW']}Envoyer ma demande de devis</button>
-  <p class="form-note">{I['SHIELD']}Vos données restent confidentielles et servent uniquement à traiter votre demande. Aucune revente, aucun démarchage.</p>
+  <p class="form-note">{I['SHIELD']}Vos données restent confidentielles et servent uniquement à traiter votre demande. Aucune revente, aucun démarchage. <a href="{href('confidentialite.html')}">En savoir plus</a></p>
 </form>'''
 
-# ---------------- Page LP ----------------
+def cta_section(p):
+    return f'''<section class="section section-cta" id="devis">
+  <div class="wrap cta-grid">
+    <div class="cta-text">
+      <span class="eyebrow gold">{p['cta_eyebrow']}</span>
+      <h2>{p['cta_h2']}</h2>
+      <p class="lead">{p['cta_lead']}</p>
+      <div class="cta-contacts">
+        <a href="tel:{PHONE_INTL}" class="cta-contact">{I['PHONE']}<span><strong>{PHONE_DISPLAY}</strong><small>{HOURS}</small></span></a>
+        <a href="mailto:{EMAIL}" class="cta-contact">{I['MAIL']}<span><strong>{EMAIL}</strong><small>Réponse rapide par e-mail</small></span></a>
+        <div class="cta-contact">{I['PIN']}<span><strong>Sainte-Pazanne (44)</strong><small>Déplacement dans toute la zone d'intervention</small></span></div>
+      </div>
+    </div>
+    <div class="form-card">{form(p)}</div>
+  </div>
+</section>'''
+
+# ---------------- Page de service ou page locale ----------------
 def build_lp(p):
-    ld_business = {
-        "@context": "https://schema.org", "@type": "HomeAndConstructionBusiness", "name": BRAND,
-        "url": SITE + p["file"], "telephone": PHONE_INTL, "email": EMAIL, "image": SITE + p["hero_img"],
-        "address": {"@type": "PostalAddress", "streetAddress": "1A impasse des Gatines", "postalCode": "44680", "addressLocality": "Sainte-Pazanne", "addressCountry": "FR"},
-        "areaServed": [c for _, cs in p["zone_cols"] for c in cs],
-        "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"], "opens": "07:00", "closes": "20:00"}],
-        "sameAs": [SITE_CLIENT, FACEBOOK],
-    }
-    ld_faq = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
-        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in p["faq"]]}
-    ld = "".join(f'<script type="application/ld+json">{json.dumps(d, ensure_ascii=False)}</script>\n' for d in (ld_business, ld_faq))
+    hero = img_name(p["hero_img"])
+    faq_ld = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": re.sub(r"<[^>]+>", "", a)}} for q, a in p["faq"]]}
+    lds = [ld_business(), faq_ld]
+    if p["file"] != "index.html":
+        lds.append(ld_breadcrumb(p["crumbs"]))
+    if p.get("service_ld"):
+        lds.append(p["service_ld"])
+    svc_links = p.get("zone_svc", "macon")
 
     reass = "".join(f'<li>{I[ic]}<span>{t}</span></li>' for t, ic in p["reassurance"])
-    services = "".join(f'''<article class="card{" card-wide" if sid == "renovation" else ""}" id="{sid}">
+    def card(svc):
+        ic, t, d, tag, sid = svc[:5]
+        link = svc[5] if len(svc) > 5 else "#devis"
+        link_txt = "En savoir plus" if len(svc) > 5 else "Demander un devis"
+        return f'''<article class="card{" card-wide" if sid == "renovation" else ""}" id="{sid}">
       <div class="card-icon">{I[ic]}</div>
       {f'<span class="tag">{tag}</span>' if tag else ''}
       <h3>{t}</h3><p>{d}</p>
-      <a href="#devis" class="card-link">Demander un devis {I['ARROW']}</a>
-    </article>''' for ic, t, d, tag, sid in p["services"])
+      <a href="{link}" class="card-link">{link_txt} {I['ARROW']}</a>
+    </article>'''
+    services = "".join(card(s) for s in p["services"])
     why = "".join(f'<div class="why-item"><div class="why-icon">{I[ic]}</div><div><h3>{t}</h3><p>{d}</p></div></div>' for ic, t, d in p["why"])
     steps = "".join(f'<li><span class="step-n">{n}</span><h3>{t}</h3><p>{d}</p></li>' for n, (t, d) in enumerate(p["process"], 1))
     ba = "".join(f'''<figure class="ba-wrap">
       <div class="ba" data-ba style="--pos:50%">
-        <img src="{b}" alt="{ab}" loading="lazy" width="1000" height="740">
-        <img src="{a}" alt="{aa}" loading="lazy" width="1000" height="740" class="ba-after">
+        {pic(img_name(b), ab)}
+        {pic(img_name(a), aa, cls="ba-after")}
         <input type="range" class="ba-range" min="0" max="100" value="50" aria-label="Comparer avant et après">
         <span class="ba-label ba-l">Avant</span><span class="ba-label ba-r">Après</span>
       </div>
       <figcaption>{cap}</figcaption>
     </figure>''' for b, a, cap, ab, aa in p["before_after"])
-    gal = "".join(f'<figure><img src="{s}" alt="{a}" loading="lazy" width="900" height="700"></figure>' for s, a in p["gallery"])
+    gal = "".join(f'<figure>{pic(img_name(s), a)}</figure>' for s, a in p["gallery"])
     stars = I["STAR"] * 5
     reviews = "".join(f'<blockquote class="review"><div class="stars">{stars}</div><p>« {t} »</p><footer>{n}</footer></blockquote>' for n, t in p["reviews"])
-    zone = "".join(f'<div class="zone-col"><h3>{I["PIN"]}{t}</h3><ul>{"".join(f"<li>{c}</li>" for c in cs)}</ul></div>' for t, cs in p["zone_cols"])
+    zone = "".join(f'<div class="zone-col"><h3>{I["PIN"]}{t}</h3><ul>{"".join(f"<li>{city_link(c, svc_links)}</li>" for c in cs)}</ul></div>' for t, cs in p["zone_cols"])
     faq = "".join(f'<details{" open" if i == 0 else ""}><summary>{q}</summary><p>{a}</p></details>' for i, (q, a) in enumerate(p["faq"]))
+    crumbs = breadcrumb(p["crumbs"]) if p["file"] != "index.html" else ""
+    zone_link = f'<p class="zone-more"><a href="{href("zones-intervention.html")}">Voir toutes nos zones d\'intervention</a></p>'
+    why_section = "" if p.get("hide_why") else f'''<section class="section section-sand" id="pourquoi">
+  <div class="wrap why-grid">
+    <div class="why-text">
+      <span class="eyebrow">{p['why_eyebrow']}</span>
+      <h2>{p['why_h2']}</h2>
+      <p class="lead">{p['why_lead']}</p>
+      <a href="#devis" class="btn btn-primary">{I['ARROW']}Demander un devis gratuit</a>
+    </div>
+    <div class="why-list">{why}</div>
+  </div>
+</section>'''
+    steps_section = "" if p.get("hide_steps") else f'''<section class="section" id="methode">
+  <div class="wrap">
+    <div class="section-head center">
+      <span class="eyebrow">{p['process_eyebrow']}</span>
+      <h2>{p['process_h2']}</h2>
+    </div>
+    <ol class="steps">{steps}</ol>
+  </div>
+</section>'''
+    zone_section = "" if p.get("hide_zone") else f'''<section class="section section-sand" id="zone">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">{p['zone_eyebrow']}</span>
+      <h2>{p['zone_h2']}</h2>
+      <p class="lead">{p['zone_lead']}</p>
+    </div>
+    <div class="zone-grid">{zone}</div>
+    {zone_link}
+  </div>
+</section>'''
 
     body = f'''<a id="top"></a>
-{header()}
+{header(p.get("nav_current", p["file"]))}
 <main>
 <section class="hero">
-  <img class="hero-bg" src="{p['hero_img']}" alt="{p['hero_alt']}" width="1600" height="900" fetchpriority="high">
+  {pic(hero, p['hero_alt'], cls="hero-bg", lazy=False, hero=True)}
   <div class="wrap hero-inner">
     <div class="hero-text">
       <span class="eyebrow light">{p['hero_eyebrow']}</span>
@@ -429,7 +645,7 @@ def build_lp(p):
     </div>
   </div>
 </section>
-
+{crumbs}
 <section class="section" id="services">
   <div class="wrap">
     <div class="section-head">
@@ -440,28 +656,10 @@ def build_lp(p):
     <div class="cards">{services}</div>
   </div>
 </section>
+{p.get('local_html', '')}
+{why_section}
 
-<section class="section section-sand" id="pourquoi">
-  <div class="wrap why-grid">
-    <div class="why-text">
-      <span class="eyebrow">{p['why_eyebrow']}</span>
-      <h2>{p['why_h2']}</h2>
-      <p class="lead">{p['why_lead']}</p>
-      <a href="#devis" class="btn btn-primary">{I['ARROW']}Demander un devis gratuit</a>
-    </div>
-    <div class="why-list">{why}</div>
-  </div>
-</section>
-
-<section class="section" id="methode">
-  <div class="wrap">
-    <div class="section-head center">
-      <span class="eyebrow">{p['process_eyebrow']}</span>
-      <h2>{p['process_h2']}</h2>
-    </div>
-    <ol class="steps">{steps}</ol>
-  </div>
-</section>
+{steps_section}
 
 <section class="section section-dark" id="realisations">
   <div class="wrap">
@@ -486,16 +684,7 @@ def build_lp(p):
   </div>
 </section>
 
-<section class="section section-sand" id="zone">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">{p['zone_eyebrow']}</span>
-      <h2>{p['zone_h2']}</h2>
-      <p class="lead">{p['zone_lead']}</p>
-    </div>
-    <div class="zone-grid">{zone}</div>
-  </div>
-</section>
+{zone_section}
 
 <section class="section" id="faq">
   <div class="wrap faq-wrap">
@@ -507,47 +696,425 @@ def build_lp(p):
   </div>
 </section>
 
-<section class="section section-cta" id="devis">
-  <div class="wrap cta-grid">
-    <div class="cta-text">
-      <span class="eyebrow gold">{p['cta_eyebrow']}</span>
-      <h2>{p['cta_h2']}</h2>
-      <p class="lead">{p['cta_lead']}</p>
-      <div class="cta-contacts">
-        <a href="tel:{PHONE_INTL}" class="cta-contact">{I['PHONE']}<span><strong>{PHONE_DISPLAY}</strong><small>{HOURS}</small></span></a>
-        <a href="mailto:{EMAIL}" class="cta-contact">{I['MAIL']}<span><strong>{EMAIL}</strong><small>Réponse rapide par e-mail</small></span></a>
-        <div class="cta-contact">{I['PIN']}<span><strong>Sainte-Pazanne (44)</strong><small>Déplacement dans toute la zone d'intervention</small></span></div>
-      </div>
-    </div>
-    <div class="form-card">{form(p)}</div>
-  </div>
-</section>
+{cta_section(p)}
 </main>
 {mobile_bar()}
 {footer()}'''
-    return head(p["title"], p["desc"], SITE + p["file"], p["hero_img"], ld, preload=p["hero_img"]) + body
+    return head(p["title"], p["desc"], p["file"], p["hero_img"], ld_json(*lds), preload=preload_hero(hero)) + body
 
-# ---------------- Page merci ----------------
+import re
+
+# ---------------- Pages de service ----------------
+EXTENSION["file"] = "extension-maison.html"
+SERVICE_INFO = {
+    "index.html": ("Maçonnerie générale", "Maçonnerie générale et gros œuvre", "macon"),
+    "extension-maison.html": ("Extension et surélévation", "Extension et surélévation de maison", "extension"),
+    "terrassement.html": ("Terrassement", "Terrassement et assainissement individuel", "terrassement"),
+}
+for p in PAGES:
+    name, svc, key = SERVICE_INFO[p["file"]]
+    p["crumbs"] = [(name, p["file"])]
+    p["zone_svc"] = key
+    p["zone_cols"] = [(sect, [c["nom"] for c in CITIES if c["secteur"] == sect]) for sect in SECTEURS]
+    p["zone_h2"] = "Loire-Atlantique, littoral et presqu'île, nord de la Vendée"
+    p["service_ld"] = {"@context": "https://schema.org", "@type": "Service", "serviceType": svc, "name": svc + " en Loire-Atlantique",
+                       "provider": {"@id": LD_BUSINESS_ID}, "areaServed": [{"@type": "City", "name": c["nom"]} for c in CITIES],
+                       "url": url_of(p["file"])}
+for p in PAGES:  # les cartes des pages de service renvoient aux autres services
+    pass
+
+# Descriptions courtes des cartes sur les pages ville (le détail est sur les pages de service)
+SHORT_CARD = {
+    "Maçonnerie générale": "Murs, dalles, fondations, ouvertures et reprise de murs anciens.",
+    "Extension de plain-pied": "Pièce de vie, suite parentale ou bureau dans le prolongement de la maison.",
+    "Surélévation de maison": "Un étage de plus sans réduire le jardin.",
+    "Garage et annexe": "Garage accolé ou indépendant, atelier, dépendance.",
+    "Fondations et dalle": "Terrassement, fondations et dalle de l'extension.",
+    "Ouverture vers l'existant": "Liaison entre la maison et l'extension, linteau ou poutre.",
+    "Couverture et finitions": "Extension livrée terminée, couverture et finitions comprises.",
+    "Rénovation clé en main": "Gros œuvre, second œuvre et finitions avec un seul interlocuteur.",
+    "Terrassement de maison, garage ou extension": "Plateforme prête à recevoir les fondations.",
+    "Fouilles et fondations": "Fouilles, fondations et dalle béton à la suite du terrassement.",
+    "Décaissement et nivellement": "Terrasse, allée, abri de jardin, aménagement extérieur.",
+    "Assainissement": "Assainissement individuel, en lien avec le SPANC.",
+    "Terrassement de piscine": "Creusement du bassin, évacuation des terres, abords.",
+    "Démolition et évacuation": "Démolition, enlèvement des gravats, remise en état.",
+}
+def short_cards(cards):
+    out = []
+    for c in cards:
+        t = re.sub(r" à .*$", "", c[1])
+        d = SHORT_CARD.get(c[1]) or SHORT_CARD.get(t)
+        if not d and t == "Extension": d = "Extension de plain-pied, surélévation, garage ou annexe."
+        if not d and t == "Terrassement": d = "Préparation de terrain, décaissement, fouilles, piscine."
+        out.append(c[:2] + (d or c[2],) + c[3:])
+    return out
+
+# ---------------- Pages service × ville ----------------
+SECT_DE = {"Nantes et agglomération": "dans l'agglomération nantaise", "Vignoble nantais": "dans le vignoble nantais",
+           "Estuaire et Brière": "dans l'estuaire et la Brière", "Littoral et presqu'île": "sur le littoral et la presqu'île",
+           "Pays de Retz": "dans le pays de Retz", "Nord Vendée": "dans le nord de la Vendée"}
+def local_aside(c, svc):
+    nom = c["nom"]
+    dist_txt = "sur place, à Sainte-Pazanne" if c["km"] == 0 else f"à environ {c['km']} km de Sainte-Pazanne, où se trouve notre entreprise"
+    near_html = ", ".join(city_link(n, svc) for n in c["near"])
+    services = "".join(f'<li><a href="{href(city_file(c, k))}">{SVC[k]["label"]} à {html.escape(nom)}</a></li>' for k in SVC if k != svc)
+    around = "".join(f'<li><a href="{href(city_file(CITY_BY_NAME[n], svc))}">{SVC[svc]["label"]} à {html.escape(n)}</a></li>' for n in c["near_pages"])
+    return f'''<aside class="local-aside">
+      <h3>{I["PIN"]}Infos pratiques</h3>
+      <ul>
+        <li><strong>Distance :</strong> {html.escape(nom)} est {dist_txt}.</li>
+        <li><strong>Visite et devis :</strong> gratuits et sans engagement.</li>
+        <li><strong>Disponibilité :</strong> {HOURS}, par téléphone ou par le formulaire.</li>
+        <li><strong>Communes voisines :</strong> {near_html}.</li>
+      </ul>
+      <h3>Nos autres services à {html.escape(nom)}</h3><ul class="city-links">{services}</ul>
+      <h3>Autour de {html.escape(nom)}</h3><ul class="city-links">{around}</ul>
+    </aside>''', dist_txt
+
+def city_page(c, svc):
+    nom, dep, km = c["nom"], c["dep"], c["km"]
+    e = html.escape(nom)
+    aside, dist_txt = local_aside(c, svc)
+    dept_name, dept_slug = DEPTS[dep]
+    q_near = (f"Intervenez-vous à {nom} et dans les communes voisines ?",
+              f"Oui. {nom} est {dist_txt}. Nous intervenons aussi dans les communes voisines, comme {', '.join(c['near'][:4])}. La visite sur place et le devis sont gratuits.")
+    if svc == "macon":
+        base = PAGE
+        local = f'''<h2>Le bâti à {e} et nos interventions</h2><p>{c["bati"]}</p>
+      <h2>Quartiers et secteurs de {e}</h2><p>{c["quartiers"]}</p>
+      <h2>Urbanisme et autorisations à {e}</h2><p>{c["urba"]}</p>'''
+        cards = [
+            ("WALL", "Maçonnerie générale", "Murs, dalles, chapes, fondations, ouvertures dans les murs porteurs, reprise et rejointoiement de murs anciens.", "Le plus demandé", "maconnerie", "#devis"),
+            ("HOUSEPLUS", f"Extension à {e}", "Extension de plain-pied, surélévation, garage ou annexe : nous construisons votre agrandissement du gros œuvre aux finitions.", "", "extension", href(city_file(c, "extension"))),
+            ("DIGGER", f"Terrassement à {e}", "Préparation de terrain, décaissement et nivellement, fouilles et fondations, assainissement individuel, terrassement de piscine.", "", "terrassement", href(city_file(c, "terrassement"))),
+            PAGE["services"][-1][:5] + ("./#renovation",),
+        ]
+        faq = [q_near, c["faq"], PAGE["faq"][1]]
+        title = f"Maçon {nom} ({dep}) — Maçonnerie & extension | {BRAND}"
+        desc = f"Maçon à {nom} : maçonnerie, ouverture de mur porteur, extension, terrassement, rénovation clé en main. Visite et devis gratuits."
+        h1 = f"Maçon à {e} : <em>maçonnerie, extension et terrassement</em>"
+        sub = c["intro"]
+        img = c["img"]
+        eyebrow = f"Maçonnerie à {e}"
+        svc_lead = "Maçonnerie neuve ou reprise sur l'existant, agrandissement, terrassement et rénovation complète, pour les particuliers, les professionnels et les collectivités."
+        needs = ["Murs, dalle, fondations", "Ouverture dans un mur porteur", "Extension ou surélévation", "Terrassement, décaissement", "Assainissement individuel", "Reprise de maçonnerie, rejointoiement", "Rénovation clé en main", "Autre projet"]
+        stype = "Maçonnerie générale et gros œuvre"
+    elif svc == "extension":
+        base = EXTENSION
+        g = GUIDES[0]
+        local = f'''<h2>Agrandir sa maison à {e}</h2><p>{c["ext"]}</p><p>{c["bati"]}</p>
+      <h2>Quel agrandissement pour votre maison à {e} ?</h2><p>{c["ext_projets"]}</p>
+      <h2>Urbanisme : ce qui s'applique à {e}</h2><p>{c["urba"]}</p>
+      <p>Pour savoir quelle autorisation déposer selon la surface créée, consultez notre guide <a href="{href(g["file"])}">déclaration préalable ou permis de construire</a>.</p>'''
+        cards = base["services"]
+        q_permis = (f"Faut-il un permis de construire pour une extension à {nom} ?",
+                    f"Cela dépend de la surface créée. Jusqu'à 20 m², une déclaration préalable suffit en général, et jusqu'à 40 m² en zone urbaine d'un plan local d'urbanisme, sauf si la maison dépasse 150 m² après les travaux. À {nom}, les règles d'implantation et de hauteur sont fixées par {c['plu']}. Nous vous indiquons la démarche lors de la visite.")
+        faq = [q_near, q_permis, c["faq"], EXTENSION["faq"][1]]
+        title = f"Extension de maison {nom} ({dep}) — Surélévation | {BRAND}"
+        desc = f"Extension de maison à {nom} : agrandissement de plain-pied, surélévation, garage, du gros œuvre aux finitions. Devis gratuit."
+        h1 = f"Extension de maison à {e} : <em>agrandissement et surélévation</em>"
+        sub = f"Extension de plain-pied, surélévation, garage ou annexe : nous construisons votre agrandissement à {e}, du terrassement aux finitions, en continuité avec votre maison. Visite sur place et devis gratuits."
+        img = ["hero-extension-maison", "extension-maison", "hero-maison-pierre-extension", "extension-bois-maison-pierre"][CITIES.index(c) % 4]
+        eyebrow = f"Extension à {e}"
+        svc_lead = base["services_lead"]
+        needs = base["form_needs"]
+        stype = "Extension et surélévation de maison"
+    else:
+        base = TERRASSEMENT
+        g = GUIDES[2]
+        local = f'''<h2>Le terrain à {e}</h2><p>{c["sol"]}</p>
+      <h2>Vos projets de terrassement à {e}</h2><p>{c["terr"]}</p>
+      <h2>Autorisations à {e}</h2><p>{c["urba"]}</p>
+      <p>Pour comprendre les étapes, lisez notre guide <a href="{href(g["file"])}">décaissement de terrain</a>.</p>'''
+        cards = base["services"]
+        q_sol = (f"Quel est le type de sol à {nom} ?", f"{c['sol']} Nous vérifions votre terrain lors de la visite avant de chiffrer.")
+        faq = [q_near, q_sol, c["faq"], TERRASSEMENT["faq"][1]]
+        title = f"Terrassement {nom} ({dep}) — Décaissement & fondations | {BRAND}"
+        desc = f"Terrassement à {nom} : préparation de terrain, décaissement, fouilles, fondations, assainissement individuel, piscine. Devis gratuit."
+        h1 = f"Terrassement à {e} : <em>décaissement, fouilles et fondations</em>"
+        sub = f"Préparation de terrain, décaissement et nivellement, fouilles et fondations, assainissement individuel, terrassement de piscine : nous réalisons vos travaux de terrassement à {e}."
+        img = ["hero-terrassement-piscine", "piscine-terrasse-bois", "facade-pierre-allee"][CITIES.index(c) % 3]
+        eyebrow = f"Terrassement à {e}"
+        svc_lead = base["services_lead"]
+        needs = base["form_needs"]
+        stype = "Terrassement et assainissement individuel"
+    label = f"{SVC[svc]['label']} à {nom}"
+    local_html = f'''<section class="section section-local" id="local">
+  <div class="wrap local-grid">
+    <div class="local-main">
+      <span class="eyebrow">{SVC[svc]['label']} à {e}</span>
+      {local}
+      <h2>{SVC[svc]['service_name']} : notre approche {SECT_DE.get(c['secteur'], 'dans le secteur')}</h2><p>{SECTEUR_TXT[c['secteur']][svc]}</p>
+    </div>
+    {aside}
+  </div>
+</section>'''
+    return dict(base,
+        file=city_file(c, svc), lp=f"{SVC[svc]['label']} {nom}", source_label=f"Page {label}",
+        title=title, desc=desc, hero_img=f"img/{img}.jpg", hero_alt="Maison rénovée et agrandie, travaux de maçonnerie",
+        hero_eyebrow=f"{c['secteur']} · {e}", h1=h1, sub=sub,
+        services_eyebrow=f"Nos travaux à {e}", services_h2="Ce que nous réalisons", services_lead=svc_lead,
+        services=short_cards(cards), local_html=local_html, hide_zone=True, hide_steps=True, hide_why=True,
+        reviews=[base["reviews"][(CITIES.index(c) + k) % len(base["reviews"])] for k in (0, 1)], nav_current=SVC[svc]["service_file"],
+        crumbs=[(f"Maçon en {dept_name}", f"{dept_slug}.html"), (label, city_file(c, svc))],
+        why_eyebrow=f"Pourquoi nous confier vos travaux à {e}",
+        zone_svc=svc, zone_eyebrow="Zone d'intervention", zone_h2=f"Autour de {e} : nos secteurs d'intervention",
+        zone_cols=[(sect, [x["nom"] for x in CITIES if x["secteur"] == sect]) for sect in SECTEURS],
+        zone_lead=f"Depuis Sainte-Pazanne, nous intervenons à {e} et dans toute la Loire-Atlantique, sur le littoral et la presqu'île, et dans le nord de la Vendée.",
+        reviews_h2="Ce que disent nos clients en Loire-Atlantique",
+        faq_h2=f"Vos questions sur vos travaux à {e}", faq=faq,
+        cta_h2=f"Votre devis gratuit à {e}", city_value=nom, form_needs=needs,
+        service_ld={"@context": "https://schema.org", "@type": "Service", "serviceType": stype, "name": label,
+                    "provider": {"@id": LD_BUSINESS_ID}, "url": url_of(city_file(c, svc)),
+                    "areaServed": [{"@type": "City", "name": nom}] + [{"@type": "City", "name": n} for n in c["near"]]},
+    )
+
+# ---------------- Pages département et hub des zones ----------------
+def zone_cards(cities):
+    out = ""
+    for sect in SECTEURS:
+        cs = [c for c in cities if c["secteur"] == sect]
+        if not cs: continue
+        items = "".join(f'''<article class="zone-card"><h3><a href="{href(city_file(c))}">Maçon à {html.escape(c["nom"])}</a></h3>
+          <p>{html.escape(c["intro"])}</p>
+          <p class="zone-card-links"><a href="{href(city_file(c, "extension"))}">Extension</a> · <a href="{href(city_file(c, "terrassement"))}">Terrassement</a></p>
+          <p class="zone-card-near">Aussi : {", ".join(html.escape(n) for n in c["near"][:4])}</p></article>''' for c in cs)
+        out += f'<h2 class="zone-sect">{I["PIN"]}{sect}</h2><div class="zone-cards">{items}</div>'
+    return out
+
+def hub_page(file, crumbs, title, desc, h1, lead, cities, intro_html="", faq=None, area=None):
+    p = dict(PAGE, lp="Zones", source_label=f"Page {crumbs[-1][0]}", cta_h2="Demandez votre devis gratuit")
+    lds = [ld_business(area), ld_breadcrumb(crumbs)]
+    faq_html = ""
+    if faq:
+        lds.append({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]})
+        faq_html = '<section class="section section-sand" id="faq"><div class="wrap faq-wrap"><div class="section-head center"><h2>Vos questions</h2></div><div class="faq">' + "".join(f'<details{" open" if i == 0 else ""}><summary>{q}</summary><p>{a}</p></details>' for i, (q, a) in enumerate(faq)) + "</div></div></section>"
+    body = f'''<a id="top"></a>
+{header("zones-intervention.html")}
+<main>
+<section class="page-hero">
+  <div class="wrap">
+    {breadcrumb(crumbs, wrap=False)}
+    <h1>{h1}</h1>
+    <p class="lead">{lead}</p>
+  </div>
+</section>
+{intro_html}
+<section class="section"><div class="wrap">{zone_cards(cities)}</div></section>
+{faq_html}
+{cta_section(p)}
+</main>
+{mobile_bar()}
+{footer()}'''
+    return head(title, desc, file, extra_ld=ld_json(*lds)) + body
+
+def build_dept(dep):
+    name, slug = DEPTS[dep]
+    cities = [c for c in CITIES if c["dep"] == dep]
+    if dep == "44":
+        lead = "Installés à Sainte-Pazanne, dans le pays de Retz, nous réalisons maçonnerie, extensions, terrassement et rénovations clé en main dans toute la Loire-Atlantique : agglomération nantaise, vignoble, estuaire et Brière, littoral et presqu'île guérandaise."
+        intro = f'''<section class="section"><div class="wrap local-main narrow"><h2>Une entreprise du bâtiment de Loire-Atlantique</h2>
+<p>Notre entreprise est installée à Sainte-Pazanne depuis 8 ans. Nous intervenons chez les particuliers, les professionnels et les collectivités, avec un seul interlocuteur du devis à la réception du chantier. Le bâti du département est varié : maisons de ville en tuffeau et pavillons de l'agglomération nantaise, longères du pays de Retz et de la Brière, villas balnéaires de la côte, maisons de vignerons autour de Vallet et Clisson. Nous adaptons les matériaux et les techniques à chacun.</p>
+<p>Les règles d'urbanisme varient aussi d'un secteur à l'autre : PLUm de Nantes Métropole, PLUi de la CARENE autour de Saint-Nazaire, loi Littoral sur la côte, secteurs protégés autour des monuments historiques. Nous les vérifions lors de la visite, avant de chiffrer.</p></div></section>'''
+        faq = [("Intervenez-vous dans toute la Loire-Atlantique ?", "Nous intervenons de Nantes à Saint-Nazaire et Guérande, de Clisson à Nort-sur-Erdre, dans le pays de Retz et sur toute la côte de Jade. Pour une commune plus éloignée, appelez-nous : nous vous répondons rapidement."),
+               ("La visite et le devis sont-ils gratuits partout ?", "Oui. La visite sur place et le devis détaillé sont gratuits et sans engagement, quelle que soit la commune de notre zone d'intervention.")]
+    else:
+        lead = "Depuis Sainte-Pazanne, nous réalisons maçonnerie, extensions, terrassement et rénovations clé en main dans le nord de la Vendée : Challans, Saint-Jean-de-Monts, Saint-Hilaire-de-Riez, l'île de Noirmoutier et le marais breton-vendéen."
+        intro = '''<section class="section"><div class="wrap local-main narrow"><h2>Le nord de la Vendée, entre côte et marais</h2>
+<p>Le nord-ouest vendéen réunit stations balnéaires, maisons de vacances, bourrines du marais breton-vendéen et maisons de l'île de Noirmoutier. Les sols y sont très différents : sable des dunes, argile du marais. Nous adaptons les fondations et le terrassement à chaque terrain.</p>
+<p>Sur la côte, la loi Littoral encadre les constructions près du rivage ; sur l'île de Noirmoutier, des règles d'aspect préservent le caractère des maisons. Nous vérifions ces règles avant de proposer une extension ou un garage.</p></div></section>'''
+        faq = [("Jusqu'où intervenez-vous en Vendée ?", "Dans le nord-ouest vendéen : Challans, Saint-Jean-de-Monts, Notre-Dame-de-Monts, Saint-Hilaire-de-Riez, Beauvoir-sur-Mer et l'île de Noirmoutier, ainsi que les communes voisines."),
+               ("Pouvez-vous intervenir sur une résidence secondaire ?", "Oui. Après la visite et la signature du devis, nous organisons l'accès au chantier avec vous et vous tenons informé de l'avancement.")]
+    crumbs = [(f"Maçon en {name}", f"{slug}.html")]
+    return hub_page(f"{slug}.html", crumbs,
+        f"Maçon en {name} ({dep}) — Maçonnerie, extension, terrassement | {BRAND}",
+        f"Maçon en {name} : maçonnerie, extension de maison, terrassement et rénovation clé en main dans {len(cities)} villes. Basés à Sainte-Pazanne. Devis gratuit.",
+        f"Maçon en {name} : <em>nous couvrons {'tout le département' if dep == '44' else 'le nord du département'}</em>", lead, cities, intro, faq,
+        area=[{"@type": "AdministrativeArea", "name": name}] + [{"@type": "City", "name": c["nom"]} for c in cities])
+
+def build_zones():
+    crumbs = [("Zones d'intervention", "zones-intervention.html")]
+    intro = f'<section class="section"><div class="wrap dept-links"><a class="btn btn-outline" href="{href("macon-loire-atlantique.html")}">Maçon en Loire-Atlantique</a> <a class="btn btn-outline" href="{href("macon-vendee.html")}">Maçon en Vendée</a></div></section>'
+    return hub_page("zones-intervention.html", crumbs,
+        f"Zones d'intervention en Loire-Atlantique et Vendée | {BRAND}",
+        "Maçonnerie, extension et terrassement à Nantes, Saint-Nazaire, Guérande, Pornic, Clisson, Nort-sur-Erdre, Saint-Jean-de-Monts et dans tout le pays de Retz.",
+        "Zones d'intervention : <em>Loire-Atlantique, littoral et nord Vendée</em>",
+        "Installés à Sainte-Pazanne, nous réalisons vos travaux de maçonnerie, d'extension, de terrassement et de rénovation clé en main de Nantes à Saint-Nazaire et Guérande, de Clisson à Nort-sur-Erdre, dans le pays de Retz et jusqu'à Saint-Jean-de-Monts et l'île de Noirmoutier.",
+        CITIES, intro)
+
+# ---------------- Guides ----------------
+def render_blocks(blocks):
+    out = ""
+    for b in blocks:
+        if isinstance(b, tuple):
+            tag, items = b
+            out += f"<{tag}>" + "".join(f"<li>{html.escape(x)}</li>" for x in items) + f"</{tag}>"
+        else:
+            out += f"<p>{html.escape(b)}</p>"
+    return out
+
+def build_guide(g):
+    secs = "".join(f'<h2>{html.escape(t)}</h2>{render_blocks(bl)}' for t, bl in g["sections"])
+    toc = "".join(f'<li>{html.escape(t)}</li>' for t, _ in g["sections"])
+    svc_file, svc_name = g["service"]
+    svc_file = "extension-maison.html" if svc_file == "extension.html" else svc_file
+    svc_key = {"index.html": "macon", "extension-maison.html": "extension", "terrassement.html": "terrassement"}[svc_file]
+    related = "".join(f'<li><a href="{href(x["file"])}">{html.escape(x["title"])}</a></li>' for x in GUIDES if x is not g)
+    cities = " · ".join(f'<a href="{href(city_file(c, svc_key))}">{html.escape(c["nom"])}</a>' for c in CITIES[:12])
+    p = dict(PAGE, lp=g["lp"], source_label=g["lp"], cta_eyebrow="Un projet ?", cta_h2="Demandez votre devis gratuit",
+             cta_lead="Décrivez vos travaux en quelques lignes, nous vous rappelons pour convenir d'une visite sur place.")
+    article_ld = {"@context": "https://schema.org", "@type": "Article", "headline": g["title"], "description": g["desc"],
+                  "image": SITE + f"img/{g['img']}.jpg", "author": {"@id": LD_BUSINESS_ID}, "publisher": {"@id": LD_BUSINESS_ID},
+                  "datePublished": "2026-10-05", "dateModified": TODAY, "mainEntityOfPage": url_of(g["file"]), "inLanguage": "fr-FR"}
+    crumbs = [("Conseils", "conseils.html"), (g["title"], g["file"])]
+    body = f'''<a id="top"></a>
+{header("conseils.html")}
+<main>
+<section class="page-hero">
+  <div class="wrap">
+    {breadcrumb(crumbs, wrap=False)}
+    <h1>{html.escape(g["title"])}</h1>
+    <p class="lead">{html.escape(g["intro"])}</p>
+  </div>
+</section>
+<section class="section article-section">
+  <div class="wrap article-grid">
+    <article class="article">
+      {pic(g["img"], g["title"], cls="article-img")}
+      {secs}
+      <div class="article-cta">
+        <p><strong>Vous avez un projet en Loire-Atlantique ou dans le nord de la Vendée ?</strong> Nous réalisons ces travaux, avec une visite sur place et un devis gratuit.</p>
+        <p><a class="btn btn-primary" href="#devis">{I['ARROW']}Demander un devis gratuit</a> <a class="btn btn-outline" href="tel:{PHONE_INTL}">{I['PHONE']}{PHONE_DISPLAY}</a></p>
+      </div>
+    </article>
+    <aside class="article-aside">
+      <h3>Dans ce guide</h3><ol class="toc">{toc}</ol>
+      <h3>Notre service</h3><p><a href="{href(svc_file)}">{html.escape(svc_name)}</a></p>
+      <h3>À lire aussi</h3><ul>{related}</ul>
+      <h3>{SVC[svc_key]["label"]} à</h3><p class="aside-cities">{cities}</p>
+    </aside>
+  </div>
+</section>
+{cta_section(p)}
+</main>
+{mobile_bar()}
+{footer()}'''
+    return head(f'{g["seo_title"]} | {BRAND}', g["desc"], g["file"], f"img/{g['img']}.jpg",
+                ld_json(article_ld, ld_breadcrumb(crumbs))) + body
+
+def build_conseils():
+    cards = "".join(f'''<article class="guide-card"><a href="{href(g["file"])}">{pic(g["img"], g["title"])}</a>
+      <h2><a href="{href(g["file"])}">{html.escape(g["title"])}</a></h2><p>{html.escape(g["desc"])}</p>
+      <a class="card-link" href="{href(g["file"])}">Lire le guide {I["ARROW"]}</a></article>''' for g in GUIDES)
+    crumbs = [("Conseils", "conseils.html")]
+    body = f'''<a id="top"></a>
+{header("conseils.html", devis="./#devis")}
+<main>
+<section class="page-hero">
+  <div class="wrap">
+    {breadcrumb(crumbs, wrap=False)}
+    <h1>Conseils travaux : <em>maçonnerie, extension et terrassement</em></h1>
+    <p class="lead">Autorisations d'urbanisme, étapes de chantier, préparation du terrain : nos guides pour préparer votre projet.</p>
+  </div>
+</section>
+<section class="section"><div class="wrap guide-cards">{cards}</div></section>
+</main>
+{mobile_bar(devis="./#devis")}
+{footer()}'''
+    return head(f"Conseils travaux de maçonnerie et d'extension | {BRAND}",
+                "Guides pratiques : déclaration préalable ou permis pour une extension, ouverture d'un mur porteur, décaissement de terrain.",
+                "conseils.html", extra_ld=ld_json(ld_breadcrumb(crumbs))) + body
+
+# ---------------- Pages légales, merci, 404 ----------------
+def simple_page(file, title, h1, inner, noindex=True, desc=""):
+    body = f'''<a id="top"></a>
+{header(devis="./#devis")}
+<main>
+<section class="page-hero"><div class="wrap"><h1>{h1}</h1></div></section>
+<section class="section"><div class="wrap legal">{inner}</div></section>
+</main>
+{footer()}'''
+    return head(title, desc or title, file, noindex=noindex) + body
+
+MENTIONS = f'''<h2>Éditeur du site</h2>
+<p>{BRAND}<br>{ADDRESS}<br>Téléphone : <a href="tel:{PHONE_INTL}">{PHONE_DISPLAY}</a><br>E-mail : <a href="mailto:{EMAIL}">{EMAIL}</a><br>SIRET : {SIRET}<br>Directeur de la publication : Corentin Douillard</p>
+<h2>Hébergement</h2>
+<p>o2switch, Clermont-Ferrand (France) – <a href="https://www.o2switch.fr" rel="noopener">www.o2switch.fr</a></p>
+<h2>Propriété intellectuelle</h2>
+<p>Les textes, photos et éléments graphiques de ce site sont la propriété de {BRAND} ou utilisés avec autorisation. Toute reproduction sans accord préalable est interdite.</p>
+<h2>Données personnelles</h2>
+<p>Le traitement des données transmises par le formulaire de devis est décrit dans notre <a href="confidentialite">politique de confidentialité</a>.</p>'''
+
+CONFID = f'''<h2>Données collectées</h2>
+<p>Lorsque vous envoyez le formulaire de demande de devis, nous recevons votre nom, votre téléphone, votre e-mail, la commune du chantier, votre besoin et votre message. Pour savoir comment vous nous avez trouvés, nous enregistrons aussi la page d'arrivée sur le site et la provenance de la visite : moteur de recherche, annonce Google Ads (identifiant de clic) ou accès direct.</p>
+<h2>Utilisation</h2>
+<p>Ces données servent uniquement à répondre à votre demande, à vous recontacter pour organiser une visite et à établir votre devis. Elles ne sont ni vendues ni cédées. Elles sont traitées par {BRAND} et par ses prestataires techniques (hébergement du site, envoi des e-mails, outil de suivi des demandes).</p>
+<h2>Durée de conservation</h2>
+<p>Les données sont conservées pendant 3 ans à compter de notre dernier échange, sauf si un contrat de travaux est signé, auquel cas elles sont conservées le temps nécessaire à son exécution et aux obligations légales.</p>
+<h2>Mesure des annonces</h2>
+<p>Ce site utilise Google Tag Manager pour mesurer les demandes de devis et les appels issus des annonces Google Ads. Des cookies de mesure de Google peuvent être déposés à cette occasion.</p>
+<h2>Vos droits</h2>
+<p>Vous pouvez demander l'accès, la rectification ou la suppression de vos données, ou vous opposer à leur traitement, en écrivant à <a href="mailto:{EMAIL}">{EMAIL}</a>. Vous pouvez aussi adresser une réclamation à la CNIL (<a href="https://www.cnil.fr" rel="noopener">www.cnil.fr</a>).</p>'''
+
 def build_merci():
     body = f'''<a id="top"></a>
-{header()}
+{header(devis="./#devis")}
 <main class="merci">
   <div class="wrap merci-inner">
     <div class="merci-icon">{I['CHECK']}</div>
     <h1>Merci, votre demande est bien reçue</h1>
     <p class="lead">Nous vous rappelons rapidement pour échanger sur votre projet et convenir d'une visite sur place. Besoin d'une réponse immédiate ? Appelez le <a href="tel:{PHONE_INTL}">{PHONE_DISPLAY}</a> ({HOURS}).</p>
-    <a href="index.html" class="btn btn-primary">{I['ARROW']}Retour à la page</a>
+    <a href="./" class="btn btn-primary">{I['ARROW']}Retour à l'accueil</a>
   </div>
 </main>
 {footer()}'''
-    return head("Merci – Demande envoyée | " + BRAND, "Votre demande de devis a bien été envoyée à " + BRAND + ".", SITE + "merci.html", PAGE["hero_img"]) + body
+    return head("Merci – Demande envoyée | " + BRAND, "Votre demande de devis a bien été envoyée à " + BRAND + ".", "merci.html", noindex=True) + body
+
+def build_404():
+    links = "".join(f'<li><a href="/{slug_of(city_file(c))}">Maçon à {html.escape(c["nom"])}</a></li>' for c in CITIES[:8])
+    inner = f'''<p class="lead">Cette page n'existe pas ou a été déplacée.</p>
+<p><a class="btn btn-primary" href="/">{I['ARROW']}Retour à l'accueil</a></p>
+<h2>Nos services</h2><ul><li><a href="/">Maçonnerie générale</a></li><li><a href="/extension-maison">Extension et surélévation</a></li><li><a href="/terrassement">Terrassement</a></li></ul>
+<h2>Nos zones</h2><ul>{links}</ul>'''
+    return simple_page("404.html", "Page introuvable | " + BRAND, "Page introuvable", inner).replace("<head>", '<head>\n<base href="/">', 1)
 
 # ---------------- Écriture ----------------
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(HERE)
+make_webp()
+for old in [f for f in os.listdir(".") if f.startswith("macon-") and f.endswith(".html")]:
+    os.remove(old)  # régénérées ci-dessous (évite de laisser d'anciennes pages)
+out = {}
 for p in PAGES:
-    open(p["file"], "w", encoding="utf-8").write(build_lp(p))
-open("merci.html", "w", encoding="utf-8").write(build_merci())
-open("robots.txt", "w").write(f"User-agent: *\nAllow: /\nSitemap: {SITE}sitemap.xml\n")
-urls = "".join(f'  <url><loc>{SITE}{p["file"]}</loc><lastmod>{TODAY}</lastmod></url>\n' for p in PAGES)
-open("sitemap.xml", "w").write(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urls}</urlset>\n')
-print("OK :", ", ".join(p["file"] for p in PAGES), "+ merci.html, robots.txt, sitemap.xml —", "GTM " + (GTM_ID or "absent (commenté)"))
+    out[p["file"]] = build_lp(p)
+out["extension.html"] = out["extension-maison.html"]  # adresse finale Google Ads, canonique vers /extension-maison
+for c in CITIES:
+    for svc in SVC:
+        out[city_file(c, svc)] = build_lp(city_page(c, svc))
+out["macon-loire-atlantique.html"] = build_dept("44")
+out["macon-vendee.html"] = build_dept("85")
+out["zones-intervention.html"] = build_zones()
+for g in GUIDES:
+    out[g["file"]] = build_guide(g)
+out["conseils.html"] = build_conseils()
+out["merci.html"] = build_merci()
+out["mentions-legales.html"] = simple_page("mentions-legales.html", "Mentions légales | " + BRAND, "Mentions légales", MENTIONS, noindex=False, desc=f"Mentions légales du site de {BRAND}, entreprise du bâtiment à Sainte-Pazanne.")
+out["confidentialite.html"] = simple_page("confidentialite.html", "Politique de confidentialité | " + BRAND, "Politique de confidentialité", CONFID, noindex=False, desc=f"Comment {BRAND} traite les données transmises par le formulaire de devis.")
+out["404.html"] = build_404()
+for f, s in out.items():
+    open(f, "w", encoding="utf-8").write(s)
+
+def canonical_in(s):
+    m = re.search(r'rel="canonical" href="([^"]+)"', s); return m.group(1) if m else ""
+indexables = sorted({canonical_in(s) for f, s in out.items() if 'content="index, follow' in s}, key=lambda u: (u != SITE, u))
+def prio(u):
+    s = u[len(SITE):]
+    if s == "": return "1.0"
+    if s in ("extension-maison", "terrassement"): return "0.9"
+    if s in ("macon-loire-atlantique", "macon-vendee", "zones-intervention"): return "0.8"
+    if s.startswith(("macon-", "extension-maison-", "terrassement-")): return "0.7"
+    return "0.5"
+urls = "".join(f'  <url><loc>{u}</loc><lastmod>{TODAY}</lastmod><priority>{prio(u)}</priority></url>\n' for u in indexables)
+open("sitemap.xml", "w", encoding="utf-8").write(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{urls}</urlset>\n')
+open("robots.txt", "w").write(f"User-agent: *\nAllow: /\nDisallow: /merci\nDisallow: /contact.php\nDisallow: /ads/\n\nSitemap: {SITE}sitemap.xml\n")
+print(f"OK : {len(out)} fichiers, {len(indexables)} adresses dans le sitemap, {len(CITIES)} villes × {len(SVC)} services, {len(GUIDES)} guides — GTM {GTM_ID}")

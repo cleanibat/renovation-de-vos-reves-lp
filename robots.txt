@@ -1,3 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /merci
+Disallow: /contact.php
+Disallow: /ads/
+
 Sitemap: https://www.larenovationdevosreves.com/sitemap.xml
