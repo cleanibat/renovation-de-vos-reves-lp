@@ -390,13 +390,14 @@ CONSENT_KEY = "rdvr_consent"
 CONSENT_DAYS = 182  # choix conservé 6 mois (recommandation CNIL)
 
 def consent_default():
-    # Mode Consentement v2 : tout est refusé tant que le visiteur n'a pas accepté (choix mémorisé 6 mois)
+    # Mode Consentement v2 (avancé) : cookies refusés tant que le visiteur n'a pas accepté (choix mémorisé 6 mois).
+    # Sans accord, Google reçoit des signaux sans cookie et l'identifiant de clic suit dans l'URL (url_passthrough).
     return ("<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
             "(function(){var c=null;try{c=JSON.parse(localStorage.getItem('%s')||'null')}catch(e){}"
             "if(c&&(!c.ts||Date.now()-c.ts>%d*864e5))c=null;var g=c&&c.v==='granted'?'granted':'denied';"
             "gtag('consent','default',{ad_storage:g,ad_user_data:g,ad_personalization:g,analytics_storage:g,"
             "functionality_storage:'granted',security_storage:'granted',wait_for_update:500});"
-            "gtag('set','ads_data_redaction',g==='denied');})();</script>") % (CONSENT_KEY, CONSENT_DAYS)
+            "gtag('set','url_passthrough',true);})();</script>") % (CONSENT_KEY, CONSENT_DAYS)
 
 def cookie_banner():
     return f'''<div class="cookie-banner" id="cookie-banner" role="dialog" aria-labelledby="cookie-title" hidden>
@@ -1082,7 +1083,7 @@ CONFID = f'''<h2>Données collectées</h2>
 <h2>Durée de conservation</h2>
 <p>Les données sont conservées pendant 3 ans à compter de notre dernier échange, sauf si un contrat de travaux est signé, auquel cas elles sont conservées le temps nécessaire à son exécution et aux obligations légales.</p>
 <h2 id="cookies">Cookies et traceurs</h2>
-<p>Lors de votre première visite, un bandeau vous demande votre accord. Sans accord, aucun cookie publicitaire n'est déposé : Google Ads reçoit seulement des signaux sans cookie ni identifiant de clic, et le site fonctionne de la même façon. Vous pouvez changer d'avis à tout moment avec le lien <button type="button" class="link-btn" data-consent-open>Gestion des cookies</button>, présent en bas de chaque page.</p>
+<p>Lors de votre première visite, un bandeau vous demande votre accord. Sans accord, aucun cookie publicitaire n'est déposé et le site fonctionne de la même façon. Google Ads reçoit alors uniquement des signaux sans cookie (par exemple « une demande de devis a été envoyée ») ; si vous êtes arrivé par une annonce, l'identifiant de clic présent dans l'adresse de la page peut y être associé pour mesurer l'efficacité de l'annonce, sans rien enregistrer sur votre appareil. Vous pouvez changer d'avis à tout moment avec le lien <button type="button" class="link-btn" data-consent-open>Gestion des cookies</button>, présent en bas de chaque page.</p>
 <p><strong>Déposés uniquement avec votre accord :</strong></p>
 <ul>
 <li><strong>_gcl_au, _gcl_aw</strong> (Google Ads, 90 jours) : relier une demande de devis ou un appel à l'annonce qui l'a précédé, pour mesurer l'efficacité de nos annonces. Ces cookies sont déposés par Google via Google Tag Manager ; voir les <a href="https://policies.google.com/technologies/ads?hl=fr" rel="noopener">règles de Google</a>.</li>

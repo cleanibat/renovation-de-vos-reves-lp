@@ -32,7 +32,6 @@
     var g = v === "granted" ? "granted" : "denied";
     if (typeof window.gtag === "function") {
       window.gtag("consent", "update", { ad_storage: g, ad_user_data: g, ad_personalization: g, analytics_storage: g });
-      window.gtag("set", "ads_data_redaction", g === "denied");
     }
     (window.dataLayer = window.dataLayer || []).push({ event: "consent_update", consent_state: g });
     granted = g === "granted";
