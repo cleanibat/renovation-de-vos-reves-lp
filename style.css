@@ -326,10 +326,12 @@ h1 em{font-style:normal;color:var(--gold)}
 
 /* ===== SEO : navigation, fil d'Ariane, pages locales, guides ===== */
 picture{display:contents}
-.main-nav{display:flex;gap:1.4rem;margin-left:auto;margin-right:1.6rem}
+.main-nav{display:flex;gap:1.1rem;margin-left:auto;margin-right:1.4rem}
+.main-nav a,.header-phone span{white-space:nowrap}
+.header-cta{flex-shrink:0}
 .main-nav a{text-decoration:none;font-weight:600;font-size:.95rem;color:var(--navy-900);padding:.3rem 0;border-bottom:2px solid transparent}
 .main-nav a:hover,.main-nav a[aria-current=page]{border-color:var(--gold)}
-@media (max-width:1080px){.main-nav{display:none}}
+@media (max-width:1240px){.main-nav{display:none}}
 .breadcrumb{padding-top:1.2rem;font-size:.85rem;color:var(--muted)}
 .breadcrumb ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
 .breadcrumb li+li::before{content:"›";margin-right:.4rem;color:var(--stone)}
@@ -397,6 +399,7 @@ picture{display:contents}
 .legal h2{font-size:1.35rem;margin-top:1.8rem}
 .legal a{color:var(--navy-700)}
 .footer-grid{grid-template-columns:1.2fr 1fr 1.4fr}
+@media (max-width:760px){.footer-grid{grid-template-columns:1fr}}
 .footer-list{list-style:none;padding:0;margin:0 0 1.2rem}
 .footer-list li{margin-bottom:.35rem}
 .footer-sect{font-weight:700;color:#fff;margin:.9rem 0 .2rem;font-size:.9rem}
@@ -420,3 +423,15 @@ picture{display:contents}
 .cookie-btn:hover{background:var(--navy-700)}
 .link-btn{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
 @media (max-width:720px){.cookie-banner{left:8px;right:8px;bottom:calc(78px + env(safe-area-inset-bottom))}.cookie-inner{padding:1rem}.cookie-actions .cookie-btn{flex:1;min-width:0}}
+
+/* Pages façade : styles de pierre, étapes, cartes sur deux colonnes */
+.cards-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:600px){.cards-2{grid-template-columns:1fr}}
+.style-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:1.2rem 0 .4rem}
+.style-item{background:var(--sand);border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem 1.25rem}
+.style-item h3{margin:0 0 .35rem;font-family:var(--font-head);font-size:1.08rem;color:var(--navy-900)}
+.style-item p{margin:0;color:var(--muted);font-size:.95rem}
+@media (max-width:600px){.style-grid{grid-template-columns:1fr}}
+.step-list{margin:.8rem 0;padding-left:1.3rem;display:grid;gap:.7rem}
+.step-list li{padding-left:.3rem}
+.step-list strong{color:var(--navy-900)}

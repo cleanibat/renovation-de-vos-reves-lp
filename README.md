@@ -12,6 +12,8 @@ python3 build.py   # régénère toutes les pages, sitemap.xml et robots.txt
 - `extension.html` : LP Extension et surélévation.
 - `terrassement.html` : LP Terrassement et assainissement.
 - `merci.html` : page de confirmation après envoi du formulaire (noindex).
+- `ravalement-facade.html` : ravalement de façade et enduit.
+- `enduit-imitation-pierre.html` : enduit imitation pierre sculpté (structure inspirée d'artipierre.fr).
 - `extension-maison.html` : version SEO de la LP Extension (canonique de `extension.html`, qui reste l'URL finale Google Ads).
 
 ## SEO (modèle artipierre.fr)
