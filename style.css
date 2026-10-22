@@ -435,3 +435,32 @@ picture{display:contents}
 .step-list{margin:.8rem 0;padding-left:1.3rem;display:grid;gap:.7rem}
 .step-list li{padding-left:.3rem}
 .step-list strong{color:var(--navy-900)}
+
+/* LP courtes (pages façade) : cartes styles de pierre, tuiles, étiquettes, 3 étapes, bandeau d'appel */
+.style-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1.2rem}
+.style-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.style-card .stone-svg{display:block;width:100%;height:auto;aspect-ratio:3/2}
+.style-card div{padding:1rem 1.1rem 1.2rem}
+.style-card h3{margin:0 0 .3rem;font-size:1.1rem;color:var(--navy-900)}
+.style-card p{margin:0;color:var(--muted);font-size:.95rem}
+@media (max-width:960px){.style-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.style-cards{gap:.7rem}.style-card div{padding:.7rem .75rem .85rem}.style-card h3{font-size:.98rem}.style-card p{font-size:.86rem}}
+.benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.6rem 2.4rem}
+.benefits-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tile{display:flex;gap:1rem;align-items:flex-start}
+.tile-icon{flex:none;width:48px;height:48px;border-radius:12px;background:var(--gold-soft);color:var(--navy-700);display:grid;place-items:center}
+.tile-icon svg{width:24px;height:24px}
+.tile h3{margin:.1rem 0 .25rem;font-size:1.08rem;color:var(--navy-900)}
+.tile p{margin:0;color:var(--muted)}
+@media (max-width:860px){.benefits-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.benefits,.benefits-3{grid-template-columns:1fr;gap:1.2rem}}
+.chips{list-style:none;margin:0 auto 1.8rem;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;max-width:760px}
+.chips li{background:#fff;border:1px solid var(--line);border-radius:999px;padding:.5rem 1rem;font-weight:600;font-size:.95rem;color:var(--navy-900)}
+.center{text-align:center}
+.steps-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:860px){.steps-3{grid-template-columns:1fr}}
+.cta-band{background:var(--gold-soft);color:var(--navy-900);padding:clamp(2.4rem,5vw,3.6rem) 0;border-top:1px solid var(--line)}
+.cta-band-inner{display:flex;align-items:center;justify-content:space-between;gap:1.6rem;flex-wrap:wrap}
+.cta-band h2{margin:0;color:var(--navy-900);font-size:clamp(1.4rem,2.6vw,2rem);max-width:620px}
+.cta-band-btns{display:flex;gap:.8rem;flex-wrap:wrap}
+@media (max-width:600px){.cta-band-btns .btn{width:100%}}

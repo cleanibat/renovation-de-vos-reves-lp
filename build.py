@@ -265,14 +265,60 @@ TERRASSEMENT = dict(PAGE,
     form_msg_ph="Type de projet, surface ou volume approximatif, pente, accès au terrain, délai souhaité…",
 )
 
-# ---------------- Contenu de la page Enduit imitation pierre (structure inspirée d'artipierre.fr) ----------------
-def content_block(blocks):
-    """Section de contenu : liste de (titre h2, html du paragraphe ou des éléments)."""
-    inner = "".join(f"<h2>{t}</h2>{h}" for t, h in blocks)
-    return f'<section class="section section-local" id="details"><div class="wrap local-main narrow">{inner}</div></section>'
+# ---------------- Pages Façade : format LP court et visuel (inspiré de artipierre.fr/ile-de-france) ----------------
+import random as _rnd
 
-def style_grid(items):
-    return '<div class="style-grid">' + "".join(f'<div class="style-item"><h3>{t}</h3><p>{d}</p></div>' for t, d in items) + "</div>"
+def stone_svg(kind):
+    """Petite illustration d'appareillage (pas de photo trompeuse) : taille, moellon, seche, briquette."""
+    r = _rnd.Random(kind)
+    tones = ["#d8ccb4", "#cfc1a5", "#e2d7c2", "#c8b99c", "#dccfb8"]
+    out = []
+    if kind == "taille":
+        bg = "#efe9dd"
+        for row in range(4):
+            y = row * 20 + 1; x = -20 if row % 2 else 0
+            while x < 120:
+                out.append(f'<rect x="{x+1}" y="{y}" width="38" height="18" rx="1" fill="{r.choice(tones)}"/>'); x += 40
+    elif kind == "briquette":
+        bg = "#efe9dd"
+        for row in range(8):
+            y = row * 10 + 1; x = -11 if row % 2 else 0
+            while x < 120:
+                out.append(f'<rect x="{x+1}" y="{y}" width="20" height="8" rx="1" fill="{r.choice(["#c98f6b", "#b97d5b", "#d39f7d", "#bf8763"])}"/>'); x += 22
+    else:
+        bg = "#efe9dd" if kind == "moellon" else "#5d5446"
+        gap = 3 if kind == "moellon" else 1.5
+        y = 0
+        while y < 80:
+            h = r.randint(11, 19); x = -r.randint(0, 10)
+            while x < 120:
+                w = r.randint(14, 34)
+                out.append(f'<rect x="{x+gap/2}" y="{y+gap/2}" width="{w-gap}" height="{h-gap}" rx="{r.randint(2,5)}" fill="{r.choice(tones)}"/>'); x += w
+            y += h
+    return f'<svg class="stone-svg" viewBox="0 0 120 80" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="120" height="80" fill="{bg}"/>{"".join(out)}</svg>'
+
+def lp_section(eyebrow, h2, inner, lead="", cls="", sid="", center=False):
+    lead_html = f'<p class="lead">{lead}</p>' if lead else ""
+    sid_attr = f' id="{sid}"' if sid else ""
+    head = f'<div class="section-head{" center" if center else ""}"><span class="eyebrow">{eyebrow}</span><h2>{h2}</h2>{lead_html}</div>'
+    return f'<section class="section {cls}"{sid_attr}><div class="wrap">{head}{inner}</div></section>'
+
+def tiles(items, cls="benefits"):
+    return f'<div class="{cls}">' + "".join(f'<div class="tile"><div class="tile-icon">{I[ic]}</div><div><h3>{t}</h3><p>{d}</p></div></div>' for ic, t, d in items) + "</div>"
+
+def steps3(items):
+    return '<ol class="steps steps-3">' + "".join(f'<li><span class="step-n">{n}</span><h3>{t}</h3><p>{d}</p></li>' for n, (t, d) in enumerate(items, 1)) + "</ol>"
+
+def cta_band(h2):
+    return (f'<section class="cta-band"><div class="wrap cta-band-inner"><h2>{h2}</h2><div class="cta-band-btns">'
+            f'<a href="#devis" class="btn btn-primary btn-lg">{I["ARROW"]}Demander un devis gratuit</a>'
+            f'<a href="tel:{PHONE_INTL}" class="btn btn-outline btn-lg">{I["PHONE"]}{PHONE_DISPLAY}</a></div></div></section>')
+
+STYLES = [("taille", "Pierre de taille", "Blocs réguliers et joints fins, l'allure des belles façades."),
+          ("moellon", "Moellon", "Pierres irrégulières, l'esprit des longères et des maisons anciennes."),
+          ("seche", "Pierre sèche", "Joints creusés presque invisibles, pour un rendu rustique."),
+          ("briquette", "Briquette et encadrements", "Pour souligner fenêtres, portes et chaînes d'angle.")]
+style_cards = '<div class="style-cards">' + "".join(f'<article class="style-card">{stone_svg(k)}<div><h3>{t}</h3><p>{d}</p></div></article>' for k, t, d in STYLES) + "</div>"
 
 IMITATION = dict(PAGE,
     file="enduit-imitation-pierre.html",
@@ -281,56 +327,38 @@ IMITATION = dict(PAGE,
     desc="Enduit imitation pierre sculpté à la main sur façade, soubassement, encadrements ou mur intérieur, en Loire-Atlantique et nord Vendée. Devis gratuit.",
     hero_img="img/maison-pierre-jardin.jpg",
     hero_alt="Maison aux murs en pierre apparente, le rendu recherché avec un enduit imitation pierre",
-    h1='Enduit imitation pierre <em>sculpté à la main</em>',
-    sub="Donnez à votre façade l'aspect de la pierre de taille ou des moellons sans reconstruire vos murs : nous appliquons un enduit épais que nous sculptons, gravons et patinons à la main, en Loire-Atlantique, sur le littoral et la presqu'île, et dans le nord de la Vendée.",
+    h1="L'aspect de la pierre <em>sur votre façade</em>",
+    sub="Un enduit sculpté à la main qui donne à vos murs le charme de la pierre, sans démolir ni reconstruire. En Loire-Atlantique et nord Vendée.",
     reassurance=[
         ("Devis gratuit et sans engagement", "DOC"),
-        ("Visite sur place et échantillon de teinte", "PIN"),
+        ("Visite sur place et choix de la teinte", "PIN"),
         ("Un seul interlocuteur du début à la fin", "USER"),
-        ("Façade protégée et chantier rendu propre", "BROOM"),
+        ("Chantier protégé et rendu propre", "BROOM"),
     ],
-    services_eyebrow="Nos réalisations en imitation pierre",
-    services_h2="Où poser un enduit imitation pierre ?",
-    services_lead="Sur une façade entière ou seulement sur certaines parties de la maison, en extérieur comme en intérieur.",
-    services=[
-        ("WALL", "Façade façon pierre de taille", "Grands blocs réguliers aux joints fins, pour une façade à l'allure de maison de maître ou de longère restaurée.", "Le plus demandé", "pierre-de-taille"),
-        ("LAYERS", "Façade façon moellons", "Pierres irrégulières de tailles variées, joints plus marqués : l'aspect des murs anciens de la région.", "", "moellons"),
-        ("DOOR", "Encadrements et chaînes d'angle", "Encadrements de fenêtres et de portes, chaînes d'angle, bandeaux et appuis sculptés, sur une façade enduite.", "Détails", "encadrements"),
-        ("SLAB", "Soubassements et murets", "Soubassement de façade, murets, piliers de portail et murs de clôture habillés façon pierre.", "", "soubassements"),
-        ("HOME", "Murs intérieurs", "Mur de séjour, cheminée, entrée ou cave voûtée : un décor pierre sans le poids ni l'épaisseur de la vraie pierre.", "Intérieur", "interieur"),
-        ("TROWEL", "Ravalement avant habillage", "Piquage des enduits dégradés, reprise des fissures et des maçonneries avant la pose : le support doit être sain.", "", "preparation"),
-        RENO_CARD,
-    ],
-    local_html=content_block([
-        ("Qu'est-ce que l'enduit imitation pierre ?",
-         "<p>L'enduit imitation pierre est un enduit minéral appliqué en couche épaisse sur un mur existant, puis travaillé à la main tant qu'il est encore frais. Nous y dessinons les pierres et les joints, creusons le relief, reproduisons les éclats et les nuances de la pierre naturelle. On parle aussi de fausse pierre ou d'enduit sculpté.</p>"
-         "<p>C'est une solution pour donner l'aspect de la pierre à une maison en parpaings, en briques ou déjà enduite, sans démolir ni ajouter de lourds parements. Chaque façade est unique : la taille des pierres, la largeur des joints et la teinte sont choisies avec vous.</p>"),
-        ("Comment se déroule la pose ?",
-         "<ol class='step-list'><li><strong>Préparation du support.</strong> Nous vérifions l'état du mur, purgeons les parties qui sonnent creux, reprenons les fissures et appliquons un gobetis d'accroche. Un support sain est la condition d'un enduit qui tient.</li>"
-         "<li><strong>Application et sculpture.</strong> L'enduit, teinté dans la masse, est appliqué en épaisseur. Encore frais, il est gravé, taillé et sculpté à la main pour dessiner chaque pierre et chaque joint.</li>"
-         "<li><strong>Patine et finitions.</strong> Une fois l'enduit pris, nous patinons les pierres pour leur donner des nuances naturelles, puis reprenons les encadrements, appuis et raccords.</li></ol>"),
-        ("Plusieurs styles de pierre",
-         style_grid([
-             ("Pierre de taille", "Blocs réguliers et joints fins, alignés en assises : l'aspect classique des belles façades."),
-             ("Moellon", "Pierres irrégulières, de formes et de tailles variées, pour l'esprit des longères et des maisons anciennes."),
-             ("Pierre sèche", "Joints creusés et peu visibles, comme un mur monté sans mortier : un rendu plus rustique."),
-             ("Briquette et encadrements", "Briquettes, chaînes d'angle et encadrements pour souligner les ouvertures d'une façade enduite."),
-         ])),
-        ("Quel prix pour un enduit imitation pierre ?",
-         "<p>Le prix au mètre carré dépend de la surface à traiter, de l'état du support et des reprises nécessaires, du style de pierre choisi (une pierre de taille demande un travail plus fin), de l'accès et de l'échafaudage. Nous nous déplaçons pour voir la façade avant de chiffrer : le devis est gratuit, détaillé poste par poste, et sans engagement.</p>"),
-        ("Faut-il une autorisation ?",
-         "<p>Habiller une façade en imitation pierre modifie l'aspect extérieur de la maison : une déclaration préalable de travaux est en général nécessaire, et le plan local d'urbanisme peut encadrer les teintes et les finitions, en particulier près des monuments historiques et sur le littoral. Nous vous indiquons la démarche lors de la visite. Pour la rénovation complète d'une façade, voir aussi notre page <a href=\"" + "ravalement-facade" + "\">ravalement de façade</a>.</p>"),
-    ]),
-    why_lead="Nous réalisons nous-mêmes la préparation du support, la pose et la sculpture de l'enduit, jusqu'aux finitions.",
-    process=[
-        ("Prise de contact", "Vous nous appelez ou remplissez le formulaire, avec quelques photos de la façade si possible."),
-        ("Visite et devis", "Nous venons voir le mur, son état et l'accès, définissons avec vous le style de pierre et la teinte, puis vous remettons un devis détaillé et gratuit."),
-        ("Planification", "Une fois le devis signé, nous préparons la déclaration préalable si nécessaire et fixons la date de démarrage, en dehors des périodes de gel ou de forte chaleur."),
-        ("Chantier et réception", "Préparation du support, pose et sculpture de l'enduit, patine, puis nettoyage du chantier et réception avec vous."),
-    ],
+    hide_services=True, hide_why=True, hide_steps=True, hide_zone=True,
+    local_html=(
+        lp_section("Styles de pierre", "Toutes les pierres, un seul savoir-faire", style_cards,
+                   lead="Taille des pierres, joints et teinte : tout se choisit avec vous.", cls="section-sand", sid="styles")
+        + lp_section("Pourquoi l'imitation pierre", "Le cachet de la pierre, sans les contraintes", tiles([
+            ("WALL", "Sans gros travaux", "L'enduit s'applique sur vos murs existants."),
+            ("DOC", "Plus abordable", "Le rendu de la pierre sans le coût d'un parement."),
+            ("SHIELD", "Fait pour l'extérieur", "Un enduit minéral pour les façades."),
+            ("TROWEL", "Sculpté à la main", "Chaque pierre est dessinée sur place."),
+        ]), sid="avantages")
+        + lp_section("Intérieur comme extérieur", "Pas seulement les façades",
+                     '<ul class="chips">' + "".join(f"<li>{x}</li>" for x in ["Façades", "Soubassements", "Encadrements", "Chaînes d'angle", "Murets et piliers", "Murs de salon", "Cheminées", "Caves"]) + "</ul>"
+                     + f'<p class="center"><a href="#devis" class="btn btn-primary">{I["ARROW"]}Parler de mon projet</a></p>',
+                     lead="Le même savoir-faire pour un mur de séjour, une cheminée ou une entrée.", cls="section-sand", sid="usages", center=True)
+        + lp_section("Notre méthode", "Votre projet en 3 étapes", steps3([
+            ("Demande de devis", "Par téléphone ou formulaire, avec une photo de la façade si possible."),
+            ("Visite et devis gratuit", "Nous voyons le mur, choisissons avec vous le style et la teinte."),
+            ("Réalisation", "Préparation du support, pose, sculpture et patine, chantier rendu propre."),
+        ]), sid="methode", center=True)
+        + cta_band("Votre façade mérite l'aspect de la pierre")
+    ),
     gallery_eyebrow="Le rendu recherché",
     gallery_h2="L'aspect de la pierre naturelle",
-    gallery_lead="L'enduit imitation pierre reproduit l'aspect de murs comme ceux-ci.",
+    gallery_lead="",
     before_after=[],
     gallery=[
         ("img/maison-pierre-jardin.jpg", "Maison aux murs en moellons de pierre"),
@@ -339,25 +367,17 @@ IMITATION = dict(PAGE,
         ("img/hero-maison-pierre-extension.jpg", "Maison en pierre et son extension"),
     ],
     faq=[
-        ("Sur quels murs peut-on poser un enduit imitation pierre ?",
-         "Sur la plupart des maçonneries : parpaings, briques, béton, ou un ancien enduit en bon état. Nous vérifions l'adhérence et l'état du mur lors de la visite ; si l'ancien enduit est dégradé, il est purgé avant la pose."),
-        ("Combien de temps dure un enduit imitation pierre ?",
-         "Bien posé sur un support sain, c'est un enduit minéral aussi durable qu'un enduit de façade classique. Il se nettoie comme une façade enduite. Sa tenue dépend surtout de la préparation du mur, que nous soignons particulièrement."),
-        ("Peut-on choisir la teinte et la forme des pierres ?",
-         "Oui. Nous définissons avec vous le style (pierre de taille, moellon, pierre sèche), la taille des pierres, la largeur des joints et la teinte, en tenant compte des règles d'urbanisme de votre commune."),
-        ("Peut-on habiller seulement une partie de la façade ?",
-         "Oui : un soubassement, les encadrements de fenêtres, les chaînes d'angle, un pignon ou un muret. C'est une bonne façon de mettre en valeur une façade enduite sans tout reprendre."),
-        ("L'enduit imitation pierre se pose-t-il à l'intérieur ?",
-         "Oui. Un mur de séjour, une cheminée, une entrée ou une cave peuvent être habillés façon pierre, sans le poids ni l'épaisseur d'un vrai parement."),
-        ("Combien de temps durent les travaux ?",
-         "La durée dépend de la surface, de l'état du mur et du style de pierre. Le planning, avec la date de démarrage et les grandes étapes, vous est remis avec le devis."),
+        ("Sur quels murs peut-on le poser ?", "Parpaing, brique, béton ou ancien enduit en bon état. S'il est dégradé, nous le purgeons avant la pose."),
+        ("Combien coûte un enduit imitation pierre ?", "Le prix dépend de la surface, de l'état du mur, du style de pierre et de l'accès. Visite et devis détaillé gratuits."),
+        ("Faut-il une autorisation ?", "Oui en général : changer l'aspect d'une façade demande une déclaration préalable. Nous vous indiquons la démarche."),
+        ("Peut-on n'habiller qu'une partie de la façade ?", "Oui : soubassement, encadrements, chaînes d'angle, pignon ou muret."),
+        ("Et à l'intérieur ?", "Oui : mur de séjour, cheminée, entrée ou cave, sans le poids d'un vrai parement."),
     ],
-    cta_lead="Décrivez votre façade ou votre mur en quelques lignes, nous vous rappelons pour convenir d'une visite sur place.",
+    cta_lead="Décrivez votre façade ou votre mur, nous vous rappelons pour convenir d'une visite.",
     form_needs=["Façade complète en imitation pierre", "Soubassement, encadrements, chaînes d'angle", "Muret, piliers, mur de clôture", "Mur intérieur, cheminée", "Ravalement avant habillage", "Autre projet"],
-    form_msg_ph="Surface approximative, type de mur (parpaing, ancien enduit…), style de pierre souhaité, délai…",
+    form_msg_ph="Surface approximative, type de mur, style de pierre souhaité, délai…",
 )
 
-# ---------------- Contenu de la page Ravalement de façade / enduit ----------------
 RAVALEMENT = dict(PAGE,
     file="ravalement-facade.html",
     lp="Ravalement",
@@ -365,52 +385,49 @@ RAVALEMENT = dict(PAGE,
     desc="Ravalement de façade, enduit neuf ou rénové, traitement des fissures, enduit à la chaux sur bâti ancien, en Loire-Atlantique et nord Vendée. Devis gratuit.",
     hero_img="img/facade-pierre-allee.jpg",
     hero_alt="Façade de maison rénovée le long d'une allée",
-    h1='Ravalement de façade et enduit <em>en Loire-Atlantique</em>',
-    sub="Fissures, enduit qui se décolle, façade noircie ou exposée aux embruns : nous rénovons votre façade, de la préparation du support à l'enduit de finition, en Loire-Atlantique, sur le littoral et la presqu'île, et dans le nord de la Vendée.",
+    h1="Ravalement de façade et enduit <em>en Loire-Atlantique</em>",
+    sub="Fissures, enduit qui se décolle, façade salie par le temps ou les embruns : nous rénovons votre façade, du support à la finition.",
     reassurance=[
         ("Devis gratuit et sans engagement", "DOC"),
-        ("Diagnostic de la façade lors de la visite", "PIN"),
+        ("Diagnostic de la façade sur place", "PIN"),
         ("Un seul interlocuteur du début à la fin", "USER"),
         ("Abords protégés et chantier rendu propre", "BROOM"),
     ],
     services_eyebrow="Nos travaux de façade",
-    services_h2="Rénover votre façade, du support à la finition",
-    services_lead="Sur les maisons récentes comme sur le bâti ancien, pour les particuliers, les professionnels et les collectivités.",
+    services_h2="Du support à la finition",
+    services_lead="Sur les maisons récentes comme sur le bâti ancien.",
     services=[
-        ("BROOM", "Nettoyage et préparation", "Nettoyage de la façade, piquage des enduits dégradés ou qui sonnent creux, préparation du support avant le nouvel enduit.", "", "preparation"),
-        ("WALL", "Traitement des fissures", "Ouverture et reprise des fissures, reprise des maçonneries abîmées, avant l'enduit pour un résultat durable.", "", "fissures"),
-        ("TROWEL", "Enduit de façade", "Enduit neuf ou rénovation d'enduit, en finition grattée, talochée ou écrasée, dans la teinte de votre choix.", "Le plus demandé", "enduit"),
-        ("LAYERS", "Enduit à la chaux sur bâti ancien", "Sur les murs en pierre ou en terre, un enduit à la chaux qui laisse respirer la maçonnerie et évacuer l'humidité.", "Bâti ancien", "chaux"),
-        ("SLAB", "Rejointoiement de pierre", "Façades en pierre apparente : retrait des joints dégradés et rejointoiement au mortier de chaux.", "", "rejointoiement"),
-        ("HOME", "Habillage imitation pierre", "Donner l'aspect de la pierre à une façade enduite : enduit sculpté à la main, en façade entière ou en détails.", "Décoratif", "imitation-pierre", "enduit-imitation-pierre"),
+        ("BROOM", "Nettoyage et préparation", "Nettoyage, piquage des enduits dégradés, support remis à neuf.", "", "preparation"),
+        ("WALL", "Traitement des fissures", "Fissures ouvertes et reprises avant l'enduit.", "", "fissures"),
+        ("TROWEL", "Enduit de façade", "Finition grattée, talochée ou écrasée, teinte au choix.", "Le plus demandé", "enduit"),
+        ("LAYERS", "Enduit à la chaux", "Pour les murs anciens en pierre : la maçonnerie respire.", "Bâti ancien", "chaux"),
+        ("SLAB", "Rejointoiement de pierre", "Joints dégradés repris au mortier de chaux.", "", "rejointoiement"),
+        ("HOME", "Habillage imitation pierre", "L'aspect de la pierre sur une façade enduite.", "Décoratif", "imitation-pierre", "enduit-imitation-pierre"),
         RENO_CARD,
     ],
-    local_html=content_block([
-        ("Quand faut-il ravaler sa façade ?",
-         "<p>Une façade se dégrade avec le temps, plus vite encore en bord de mer où le sel et le vent usent les enduits. Les signes qui doivent alerter : fissures, enduit qui se décolle ou sonne creux, traces d'humidité, mousses et salissures, joints qui se creusent sur un mur en pierre. Un ravalement protège les murs de l'eau et redonne de l'allure à la maison.</p>"
-         "<p>Certaines communes imposent un ravalement périodique des façades. Dans les secteurs protégés, près des monuments historiques ou lorsque la commune l'a décidé, une déclaration préalable est nécessaire ; elle l'est aussi si vous changez l'aspect de la façade. Nous vous indiquons la démarche lors de la visite.</p>"),
-        ("Le déroulement d'un ravalement",
-         "<ol class='step-list'><li><strong>Diagnostic.</strong> Nous examinons le support : nature du mur, adhérence de l'enduit existant, fissures, humidité. C'est ce diagnostic qui détermine la bonne solution.</li>"
-         "<li><strong>Préparation.</strong> Protection des abords et des menuiseries, nettoyage, piquage des parties dégradées, reprise des fissures et des maçonneries.</li>"
-         "<li><strong>Enduit et finitions.</strong> Application de l'enduit adapté au support, en une ou plusieurs couches, puis reprise des encadrements, appuis et soubassements et nettoyage du chantier.</li></ol>"),
-        ("Quel enduit pour quel mur ?",
-         style_grid([
-             ("Parpaing, brique, béton", "Un enduit de façade hydraulique, en finition grattée, talochée ou écrasée, dans un large choix de teintes."),
-             ("Pierre et moellons", "Un enduit à la chaux, ou un rejointoiement si vous gardez la pierre apparente : la maçonnerie doit pouvoir respirer."),
-             ("Bord de mer", "Des mortiers adaptés aux façades exposées au vent et aux embruns, et une attention particulière aux soubassements."),
-             ("Façade à embellir", "Un habillage en enduit imitation pierre pour donner l'aspect de la pierre de taille ou des moellons."),
-         ])),
-        ("Quel prix pour un ravalement de façade ?",
-         "<p>Le prix dépend de la surface de façade, de son état (fissures, enduit à purger), de l'enduit et de la finition choisis, de la hauteur, de l'échafaudage et de l'accès. Nous nous déplaçons pour diagnostiquer la façade avant de chiffrer : le devis est gratuit, détaillé poste par poste, et sans engagement.</p>"
-         "<p>Pour donner l'aspect de la pierre à votre façade, découvrez notre <a href=\"" + "enduit-imitation-pierre" + "\">enduit imitation pierre</a>.</p>"),
-    ]),
-    why_lead="Nous réalisons nous-mêmes le diagnostic, la préparation du support et l'enduit, jusqu'aux finitions.",
-    process=[
-        ("Prise de contact", "Vous nous appelez ou remplissez le formulaire, avec quelques photos de la façade si possible."),
-        ("Visite et diagnostic", "Nous examinons la façade, son support et l'accès, puis vous remettons un devis détaillé et gratuit."),
-        ("Planification", "Une fois le devis signé, nous préparons la déclaration préalable si nécessaire, l'échafaudage et la date de démarrage."),
-        ("Chantier et réception", "Préparation, enduit et finitions, puis nettoyage des abords et réception de la façade avec vous."),
-    ],
+    hide_why=True, hide_steps=True, hide_zone=True,
+    local_html=(
+        lp_section("Les signes à surveiller", "Quand faut-il ravaler sa façade ?", tiles([
+            ("WALL", "Fissures", "Fines ou plus marquées, elles laissent entrer l'eau."),
+            ("LAYERS", "Enduit qui se décolle", "Il sonne creux ou tombe par plaques."),
+            ("DROP", "Traces d'humidité", "Taches, auréoles, peinture qui cloque."),
+            ("BROOM", "Salissures et mousses", "Façade noircie ou verdie avec le temps."),
+            ("SLAB", "Joints creusés", "Sur la pierre, le mortier s'effrite."),
+            ("PIN", "Bord de mer", "Sel et vent usent les façades plus vite."),
+        ], cls="benefits benefits-3"), cls="section-sand", sid="signes")
+        + lp_section("Quel enduit pour quel mur ?", "La bonne solution pour votre façade", tiles([
+            ("WALL", "Parpaing, brique, béton", "Enduit de façade, dans un large choix de teintes."),
+            ("LAYERS", "Pierre et moellons", "Enduit à la chaux ou rejointoiement, pour laisser respirer le mur."),
+            ("PIN", "Façade exposée", "Mortiers adaptés au vent et aux embruns."),
+            ("HOME", "Façade à embellir", "Habillage en enduit imitation pierre."),
+        ]), sid="enduits")
+        + lp_section("Notre méthode", "Votre ravalement en 3 étapes", steps3([
+            ("Diagnostic", "Nous examinons le support, les fissures et l'humidité lors de la visite."),
+            ("Préparation", "Abords protégés, nettoyage, piquage et reprise des fissures."),
+            ("Enduit et finitions", "Enduit adapté au mur, encadrements et appuis, nettoyage."),
+        ]), cls="section-sand", sid="methode", center=True)
+        + cta_band("Une façade remise à neuf, du support à la finition")
+    ),
     gallery_eyebrow="Façades",
     gallery_h2="Façades et murs en pierre",
     gallery_lead="",
@@ -423,22 +440,15 @@ RAVALEMENT = dict(PAGE,
     ],
     reviews=[PAGE["reviews"][1], PAGE["reviews"][0], PAGE["reviews"][2], PAGE["reviews"][3]],
     faq=[
-        ("Faut-il une autorisation pour un ravalement de façade ?",
-         "Un ravalement à l'identique ne demande en général pas d'autorisation, sauf dans les secteurs protégés, aux abords des monuments historiques ou si votre commune l'a décidé ; une déclaration préalable est alors nécessaire. Elle l'est aussi si vous changez la teinte ou l'aspect de la façade. Nous vous indiquons la démarche lors de la visite."),
-        ("Quelle est la différence entre enduit à la chaux et enduit hydraulique ?",
-         "L'enduit à la chaux est souple et laisse respirer les murs : il convient aux maçonneries anciennes en pierre ou en terre. L'enduit hydraulique, plus rigide, convient aux murs en parpaing, brique ou béton. Le choix dépend du support, que nous examinons lors de la visite."),
-        ("Les fissures de ma façade sont-elles graves ?",
-         "La plupart des fissures fines viennent du vieillissement de l'enduit et se traitent lors du ravalement. Une fissure large, qui traverse le mur ou qui évolue, peut traduire un mouvement de la maçonnerie : nous la regardons de près lors du diagnostic avant de proposer une solution."),
-        ("Peut-on rester dans la maison pendant le ravalement ?",
-         "Oui. Les travaux se font depuis l'extérieur ; nous protégeons les menuiseries et les abords, et vous indiquons à l'avance les moments où l'échafaudage est installé et démonté."),
-        ("Combien de temps durent les travaux ?",
-         "La durée dépend de la surface, de l'état de la façade et de la météo, car un enduit se pose hors gel et hors forte chaleur. Le planning vous est remis avec le devis."),
-        ("Pouvez-vous donner l'aspect de la pierre à ma façade ?",
-         "Oui, avec un enduit imitation pierre sculpté à la main, en façade entière ou sur les encadrements, chaînes d'angle et soubassements. Voir notre page dédiée à l'enduit imitation pierre."),
+        ("Faut-il une autorisation ?", "Pas pour un ravalement à l'identique, sauf en secteur protégé ou si la commune l'impose. Un changement de teinte demande une déclaration préalable."),
+        ("Chaux ou enduit classique ?", "La chaux pour les murs anciens en pierre, qui doivent respirer ; l'enduit hydraulique pour le parpaing, la brique ou le béton."),
+        ("Mes fissures sont-elles graves ?", "Les fissures fines se traitent pendant le ravalement. Une fissure large ou qui évolue est examinée de près lors du diagnostic."),
+        ("Combien coûte un ravalement ?", "Selon la surface, l'état de la façade, la finition et l'échafaudage. Visite et devis détaillé gratuits."),
+        ("Peut-on rester chez soi pendant les travaux ?", "Oui, tout se fait depuis l'extérieur ; menuiseries et abords sont protégés."),
     ],
-    cta_lead="Décrivez votre façade en quelques lignes, nous vous rappelons pour convenir d'une visite et d'un diagnostic sur place.",
+    cta_lead="Décrivez votre façade, nous vous rappelons pour convenir d'une visite et d'un diagnostic.",
     form_needs=["Ravalement complet de façade", "Enduit neuf ou rénovation d'enduit", "Traitement de fissures", "Enduit à la chaux, bâti ancien", "Rejointoiement de pierre", "Enduit imitation pierre", "Autre projet"],
-    form_msg_ph="Type de mur, surface ou nombre de façades, problèmes constatés (fissures, décollement…), délai souhaité…",
+    form_msg_ph="Type de mur, surface, problèmes constatés (fissures, décollement…), délai…",
 )
 
 PAGES = [PAGE, EXTENSION, TERRASSEMENT, RAVALEMENT, IMITATION]
@@ -815,6 +825,16 @@ def build_lp(p):
     faq = "".join(f'<details{" open" if i == 0 else ""}><summary>{q}</summary><p>{a}</p></details>' for i, (q, a) in enumerate(p["faq"]))
     crumbs = breadcrumb(p["crumbs"]) if p["file"] != "index.html" else ""
     zone_link = f'<p class="zone-more"><a href="{href("zones-intervention.html")}">Voir toutes nos zones d\'intervention</a></p>'
+    services_section = "" if p.get("hide_services") else f'''<section class="section" id="services">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">{p['services_eyebrow']}</span>
+      <h2>{p['services_h2']}</h2>
+      <p class="lead">{p['services_lead']}</p>
+    </div>
+    <div class="cards">{services}</div>
+  </div>
+</section>'''
     why_section = "" if p.get("hide_why") else f'''<section class="section section-sand" id="pourquoi">
   <div class="wrap why-grid">
     <div class="why-text">
@@ -866,16 +886,7 @@ def build_lp(p):
   </div>
 </section>
 {crumbs}
-<section class="section" id="services">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">{p['services_eyebrow']}</span>
-      <h2>{p['services_h2']}</h2>
-      <p class="lead">{p['services_lead']}</p>
-    </div>
-    <div class="cards">{services}</div>
-  </div>
-</section>
+{services_section}
 {p.get('local_html', '')}
 {why_section}
 
