@@ -482,3 +482,4 @@ picture{display:contents}
 .zone-map-grid .zone-col{background:none;border:0;box-shadow:none;padding:0}
 .zone-map-grid .zone-col h3{margin-bottom:.5rem}
 @media (max-width:900px){.zone-map{position:static}}
+.zone-map-grid .zone-col li{background:#fff;border:1px solid var(--line)}
