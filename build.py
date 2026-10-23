@@ -382,32 +382,31 @@ RAVALEMENT = dict(PAGE,
     file="ravalement-facade.html",
     lp="Ravalement",
     title="Ravalement de façade et enduit en Loire-Atlantique | La Rénovation de vos rêves",
-    desc="Ravalement de façade, enduit neuf ou rénové, traitement des fissures, enduit à la chaux sur bâti ancien, en Loire-Atlantique et nord Vendée. Devis gratuit.",
+    desc="Enduit de façade sur construction neuve, ravalement et rénovation d'enduit, fissures, enduit à la chaux, en Loire-Atlantique et nord Vendée. Devis gratuit.",
     hero_img="img/facade-pierre-allee.jpg",
     hero_alt="Façade de maison rénovée le long d'une allée",
     h1="Ravalement de façade et enduit <em>en Loire-Atlantique</em>",
-    sub="Fissures, enduit qui se décolle, façade salie par le temps ou les embruns : nous rénovons votre façade, du support à la finition.",
+    sub="Enduit de façade sur maison neuve ou ravalement d'une façade fatiguée : nous réalisons vos enduits, du support à la finition.",
     reassurance=[
         ("Devis gratuit et sans engagement", "DOC"),
-        ("Diagnostic de la façade sur place", "PIN"),
+        ("Visite et conseil sur place", "PIN"),
         ("Un seul interlocuteur du début à la fin", "USER"),
         ("Abords protégés et chantier rendu propre", "BROOM"),
     ],
     services_eyebrow="Nos travaux de façade",
-    services_h2="Du support à la finition",
-    services_lead="Sur les maisons récentes comme sur le bâti ancien.",
+    services_h2="En neuf comme en rénovation",
+    services_lead="Maison neuve, extension, garage ou façade existante à rafraîchir.",
     services=[
-        ("BROOM", "Nettoyage et préparation", "Nettoyage, piquage des enduits dégradés, support remis à neuf.", "", "preparation"),
+        ("HOUSEPLUS", "Enduit sur construction neuve", "Maison neuve, extension, garage ou mur de clôture : enduit dans la teinte de votre choix.", "Neuf", "neuf"),
+        ("TROWEL", "Ravalement et rénovation d'enduit", "Nettoyage, piquage des parties dégradées et nouvel enduit.", "Le plus demandé", "ravalement"),
         ("WALL", "Traitement des fissures", "Fissures ouvertes et reprises avant l'enduit.", "", "fissures"),
-        ("TROWEL", "Enduit de façade", "Finition grattée, talochée ou écrasée, teinte au choix.", "Le plus demandé", "enduit"),
         ("LAYERS", "Enduit à la chaux", "Pour les murs anciens en pierre : la maçonnerie respire.", "Bâti ancien", "chaux"),
         ("SLAB", "Rejointoiement de pierre", "Joints dégradés repris au mortier de chaux.", "", "rejointoiement"),
         ("HOME", "Habillage imitation pierre", "L'aspect de la pierre sur une façade enduite.", "Décoratif", "imitation-pierre", "enduit-imitation-pierre"),
-        RENO_CARD,
     ],
     hide_why=True, hide_steps=True, hide_zone=True,
     local_html=(
-        lp_section("Les signes à surveiller", "Quand faut-il ravaler sa façade ?", tiles([
+        lp_section("Façade existante", "Quand faut-il ravaler sa façade ?", tiles([
             ("WALL", "Fissures", "Fines ou plus marquées, elles laissent entrer l'eau."),
             ("LAYERS", "Enduit qui se décolle", "Il sonne creux ou tombe par plaques."),
             ("DROP", "Traces d'humidité", "Taches, auréoles, peinture qui cloque."),
@@ -416,14 +415,14 @@ RAVALEMENT = dict(PAGE,
             ("PIN", "Bord de mer", "Sel et vent usent les façades plus vite."),
         ], cls="benefits benefits-3"), cls="section-sand", sid="signes")
         + lp_section("Quel enduit pour quel mur ?", "La bonne solution pour votre façade", tiles([
-            ("WALL", "Parpaing, brique, béton", "Enduit de façade, dans un large choix de teintes."),
+            ("WALL", "Maison neuve : parpaing, brique, béton", "Enduit monocouche gratté, taloché ou écrasé, teinte au choix."),
             ("LAYERS", "Pierre et moellons", "Enduit à la chaux ou rejointoiement, pour laisser respirer le mur."),
             ("PIN", "Façade exposée", "Mortiers adaptés au vent et aux embruns."),
             ("HOME", "Façade à embellir", "Habillage en enduit imitation pierre."),
         ]), sid="enduits")
         + lp_section("Notre méthode", "Votre ravalement en 3 étapes", steps3([
-            ("Diagnostic", "Nous examinons le support, les fissures et l'humidité lors de la visite."),
-            ("Préparation", "Abords protégés, nettoyage, piquage et reprise des fissures."),
+            ("Visite et devis", "Nous examinons le support (neuf ou existant) et vous conseillons sur la finition."),
+            ("Préparation", "Abords protégés, nettoyage, reprise des fissures si besoin."),
             ("Enduit et finitions", "Enduit adapté au mur, encadrements et appuis, nettoyage."),
         ]), cls="section-sand", sid="methode", center=True)
         + cta_band("Une façade remise à neuf, du support à la finition")
@@ -444,14 +443,18 @@ RAVALEMENT = dict(PAGE,
         ("Chaux ou enduit classique ?", "La chaux pour les murs anciens en pierre, qui doivent respirer ; l'enduit hydraulique pour le parpaing, la brique ou le béton."),
         ("Mes fissures sont-elles graves ?", "Les fissures fines se traitent pendant le ravalement. Une fissure large ou qui évolue est examinée de près lors du diagnostic."),
         ("Combien coûte un ravalement ?", "Selon la surface, l'état de la façade, la finition et l'échafaudage. Visite et devis détaillé gratuits."),
-        ("Peut-on rester chez soi pendant les travaux ?", "Oui, tout se fait depuis l'extérieur ; menuiseries et abords sont protégés."),
+        ("Faites-vous l'enduit des constructions neuves ?", "Oui : maison neuve, extension, garage ou mur de clôture, dans la teinte et la finition de votre choix."),
     ],
-    cta_lead="Décrivez votre façade, nous vous rappelons pour convenir d'une visite et d'un diagnostic.",
-    form_needs=["Ravalement complet de façade", "Enduit neuf ou rénovation d'enduit", "Traitement de fissures", "Enduit à la chaux, bâti ancien", "Rejointoiement de pierre", "Enduit imitation pierre", "Autre projet"],
+    cta_lead="Décrivez votre façade, nous vous rappelons pour convenir d'une visite.",
+    form_needs=["Enduit sur construction neuve", "Ravalement complet de façade", "Enduit neuf ou rénovation d'enduit", "Traitement de fissures", "Enduit à la chaux, bâti ancien", "Rejointoiement de pierre", "Enduit imitation pierre", "Autre projet"],
     form_msg_ph="Type de mur, surface, problèmes constatés (fissures, décollement…), délai…",
 )
 
 PAGES = [PAGE, EXTENSION, TERRASSEMENT, RAVALEMENT, IMITATION]
+ZONE_SVG = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "img", "carte-zone.svg"), encoding="utf-8").read()  # généré par ads/zone_carte.py
+for _p in PAGES:
+    _p["zone_map"] = True
+    _p["hide_zone"] = False
 PAGE["local_html"] = f'''<section class="section section-sand" id="facades">
   <div class="wrap">
     <div class="section-head">
@@ -460,7 +463,7 @@ PAGE["local_html"] = f'''<section class="section section-sand" id="facades">
       <p class="lead">Nous rénovons aussi vos façades : préparation du support, enduit neuf ou à la chaux, et habillage en enduit imitation pierre sculpté à la main.</p>
     </div>
     <div class="cards cards-2">
-      <article class="card"><div class="card-icon">{I["TROWEL"]}</div><h3>Ravalement de façade et enduit</h3><p>Traitement des fissures, enduit neuf ou rénovation d'enduit, enduit à la chaux sur bâti ancien, rejointoiement de pierre.</p><a href="ravalement-facade" class="card-link">En savoir plus {I["ARROW"]}</a></article>
+      <article class="card"><div class="card-icon">{I["TROWEL"]}</div><h3>Ravalement de façade et enduit</h3><p>Enduit sur construction neuve, ravalement et rénovation d'enduit, enduit à la chaux, rejointoiement de pierre.</p><a href="ravalement-facade" class="card-link">En savoir plus {I["ARROW"]}</a></article>
       <article class="card"><div class="card-icon">{I["WALL"]}</div><h3>Enduit imitation pierre</h3><p>L'aspect de la pierre de taille ou des moellons sur votre façade, vos encadrements ou un mur intérieur, sculpté à la main.</p><a href="enduit-imitation-pierre" class="card-link">En savoir plus {I["ARROW"]}</a></article>
     </div>
   </div>
@@ -855,7 +858,23 @@ def build_lp(p):
     <ol class="steps">{steps}</ol>
   </div>
 </section>'''
-    zone_section = "" if p.get("hide_zone") else f'''<section class="section section-sand" id="zone">
+    if p.get("zone_map"):
+        zone_section = f'''<section class="section section-sand" id="zone">
+  <div class="wrap zone-map-grid">
+    <div class="zone-map">{ZONE_SVG}<p class="zone-map-legend"><span><i class="lg lg-44"></i>Loire-Atlantique</span><span><i class="lg lg-85"></i>Nord Vendée</span><span><i class="lg lg-hq"></i>Sainte-Pazanne, notre entreprise</span></p></div>
+    <div>
+      <div class="section-head">
+        <span class="eyebrow">Zone d'intervention</span>
+        <h2>{p['zone_h2']}</h2>
+        <p class="lead">{p['zone_lead']}</p>
+      </div>
+      <div class="zone-grid zone-grid-2">{zone}</div>
+      {zone_link}
+    </div>
+  </div>
+</section>'''
+    else:
+     zone_section = "" if p.get("hide_zone") else f'''<section class="section section-sand" id="zone">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">{p['zone_eyebrow']}</span>
@@ -1088,7 +1107,7 @@ def city_page(c, svc):
         title=title, desc=desc, hero_img=f"img/{img}.jpg", hero_alt="Maison rénovée et agrandie, travaux de maçonnerie",
         hero_eyebrow=f"{c['secteur']} · {e}", h1=h1, sub=sub,
         services_eyebrow=f"Nos travaux à {e}", services_h2="Ce que nous réalisons", services_lead=svc_lead,
-        services=short_cards(cards), local_html=local_html, hide_zone=True, hide_steps=True, hide_why=True,
+        services=short_cards(cards), local_html=local_html, hide_zone=True, zone_map=False, hide_steps=True, hide_why=True,
         reviews=[base["reviews"][(CITIES.index(c) + k) % len(base["reviews"])] for k in (0, 1)], nav_current=SVC[svc]["service_file"],
         crumbs=[(f"Maçon en {dept_name}", f"{dept_slug}.html"), (label, city_file(c, svc))],
         why_eyebrow=f"Pourquoi nous confier vos travaux à {e}",
