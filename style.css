@@ -476,3 +476,9 @@ picture{display:contents}
 .zone-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media (max-width:900px){.zone-map-grid{grid-template-columns:1fr}.zone-map{max-width:520px;margin:0 auto}}
 @media (max-width:520px){.zone-grid-2{grid-template-columns:1fr}}
+.zone-map-grid{align-items:start}
+.zone-map{position:sticky;top:96px}
+.zone-map-grid .zone-grid-2{gap:1.4rem 1.8rem}
+.zone-map-grid .zone-col{background:none;border:0;box-shadow:none;padding:0}
+.zone-map-grid .zone-col h3{margin-bottom:.5rem}
+@media (max-width:900px){.zone-map{position:static}}
