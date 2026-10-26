@@ -56,7 +56,7 @@ if($fh){ if(filesize($CSV)===0) fputcsv($fh,array_merge(['date','nom','telephone
 $cfg = @json_decode(@file_get_contents(dirname($_SERVER['DOCUMENT_ROOT']) . '/agence_renovation-de-vos-reves.json'), true);
 if (is_array($cfg) && !empty($cfg['make_url']) && function_exists('curl_init')) {
   $lead = ['client'=>$cfg['client']??'', 'cle'=>$cfg['cle']??'', 'nom'=>$nom, 'telephone'=>$tel, 'email'=>$email, 'localite'=>$ville, 'besoin'=>$besoin,
-    'message'=>str_replace(["\r","\n"],' ',$msg), 'source'=>$origine, 'campagne'=>$campagne, 'id'=>'site-'.date('YmdHis').'-'.substr(md5($email.$tel),0,6)];
+    'message'=>str_replace(["\r","\n"],' ',$msg), 'source'=>$origine, 'campagne'=>$campagne, 'gclid'=>$A['gclid'], 'id'=>'site-'.date('YmdHis').'-'.substr(md5($email.$tel),0,6)];
   $ch = curl_init($cfg['make_url']);
   curl_setopt_array($ch, [CURLOPT_POST=>true, CURLOPT_RETURNTRANSFER=>true, CURLOPT_CONNECTTIMEOUT=>2, CURLOPT_TIMEOUT=>4,
     CURLOPT_HTTPHEADER=>['Content-Type: application/json'], CURLOPT_POSTFIELDS=>json_encode($lead)]);
