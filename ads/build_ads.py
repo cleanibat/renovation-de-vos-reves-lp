@@ -57,6 +57,42 @@ GROUPS = [
                   "Intervention en Loire-Atlantique, sur le littoral, la presqu'île et le nord Vendée."]),
 ]
 
+# Groupes façade ajoutés le 2026-10-26 (pages /ravalement-facade et /enduit-imitation-pierre)
+FACADE_GROUPS = [
+  dict(name="Ravalement de façade", url=SITE + "ravalement-facade", path=("facade", "ravalement"),
+    phrase=["ravalement de façade", "ravalement façade", "entreprise ravalement façade", "façadier", "enduit façade",
+            "enduit de façade", "rénovation façade", "enduit façade maison neuve", "crépi façade", "ravalement façade nantes",
+            "façadier nantes", "ravalement façade loire atlantique", "enduit monocouche", "enduit à la chaux façade",
+            "fissure façade", "ravalement façade prix"],
+    exact=["ravalement de façade", "façadier", "enduit façade", "ravalement façade nantes"],
+    headlines=["Ravalement de façade", "Enduit de façade", "Façadier Loire-Atlantique", "Enduit sur maison neuve",
+               "Rénovation de façade", "Traitement des fissures", "Enduit à la chaux", "Rejointoiement de pierre",
+               "Façadier à Nantes et Pornic", "Devis gratuit et détaillé", "Visite et devis gratuits", "En neuf comme en rénovation",
+               "Finition grattée ou talochée", "Un seul interlocuteur", "Joignables 7 j/7"],
+    descriptions=["Enduit sur maison neuve ou ravalement : du support à la finition, teinte au choix.",
+                  "Fissures, enduit qui se décolle, façade salie : nous remettons votre façade à neuf.",
+                  "Visite sur place et devis écrit détaillé, gratuit et sans engagement. Appelez-nous.",
+                  "Intervention en Loire-Atlantique, sur le littoral, la presqu'île et le nord Vendée."]),
+  dict(name="Enduit imitation pierre", url=SITE + "enduit-imitation-pierre", path=("enduit", "fausse-pierre"),
+    phrase=["enduit imitation pierre", "imitation pierre façade", "fausse pierre façade", "enduit fausse pierre",
+            "enduit pierre sculpté", "façade imitation pierre", "enduit imitation pierre prix", "imitation pierre de taille",
+            "enduit façon pierre", "enduit imitation pierre nantes", "enduit imitation pierre loire atlantique",
+            "habillage façade pierre", "mur imitation pierre", "enduit décoratif façade"],
+    exact=["enduit imitation pierre", "imitation pierre façade", "fausse pierre façade", "enduit fausse pierre"],
+    headlines=["Enduit imitation pierre", "L'aspect de la pierre", "Fausse pierre sculptée main", "Façon pierre de taille",
+               "Façon moellons ou pierre sèche", "Encadrements, soubassements", "Sans démolir ni reconstruire",
+               "Imitation pierre à Nantes", "Devis gratuit et détaillé", "Visite et devis gratuits", "Style et teinte au choix",
+               "Murs intérieurs, cheminées", "Un seul interlocuteur", "Joignables 7 j/7", "En Loire-Atlantique"],
+    descriptions=["Un enduit sculpté à la main qui donne à votre façade l'aspect de la pierre.",
+                  "Pierre de taille, moellon, pierre sèche : style, joints et teinte choisis avec vous.",
+                  "Visite sur place et devis écrit détaillé, gratuit et sans engagement. Appelez-nous.",
+                  "Intervention en Loire-Atlantique, sur le littoral, la presqu'île et le nord Vendée."]),
+]
+GROUPS += FACADE_GROUPS
+# bricolage / produits pour l'imitation pierre (achats, pas des chantiers)
+FACADE_NEGATIVES = ["plaquette", "panneau", "polystyrène", "pvc", "adhésif", "sticker", "papier peint", "pochoir", "moule",
+                    "tampon", "rouleau", "weber", "parex", "sac", "seau", "achat", "acheter", "vente"]
+
 NEGATIVES = ["emploi", "recrutement", "salaire", "formation", "cap", "bac pro", "apprenti", "apprentissage", "stage", "alternance",
              "cours", "tuto", "tutoriel", "soi même", "soi-même", "diy", "bricolage", "leroy merlin", "castorama", "brico",
              "location", "louer", "mini pelle", "occasion", "pdf", "wikipedia", "wiki", "définition", "logiciel", "kit", "plan",
@@ -68,6 +104,9 @@ SITELINKS = [("Maçonnerie générale", "Murs, dalles, ouvertures", "Neuf et rep
              ("Extension et surélévation", "Plain-pied, étage, garage", "Du gros œuvre aux finitions", SITE + "extension.html"),
              ("Terrassement", "Plateforme, fouilles, décaissement", "Assainissement individuel", SITE + "terrassement.html"),
              ("Demander un devis", "Visite sur place gratuite", "Devis écrit et détaillé", SITE + "#devis")]
+FACADE_SITELINKS = [("Ravalement de façade", "Enduit neuf ou rénovation", "Fissures, chaux, rejointoiement", SITE + "ravalement-facade"),
+                    ("Enduit imitation pierre", "Sculpté à la main", "Façade, encadrements, intérieur", SITE + "enduit-imitation-pierre")]
+SITELINKS += FACADE_SITELINKS
 CALLOUTS = ["Devis gratuit", "Visite sur place", "Joignables 7 j/7", "Un seul interlocuteur", "8 ans d'expérience",
             "Chantier rendu propre", "Particuliers et pros", "Rénovation clé en main"]
 SNIPPET = ("Services", ["Maçonnerie", "Extension", "Surélévation", "Terrassement", "Assainissement", "Rénovation clé en main"])
@@ -104,7 +143,7 @@ row(Campaign_Type="Search", Networks="Google search", Budget=f"{BUDGET_JOUR:.2f}
     Bid_Strategy_Type="Maximize conversions", Languages="fr", Targeting_method="Location of presence",
     Exclusion_method="Location of presence", Campaign_Status=STATUS)
 for lat, lon, r in GEO: row(Location=f"({r}km:{lat:.6f}:{lon:.6f})")
-for n in NEGATIVES: row(Keyword=n, Criterion_Type="Campaign negative")
+for n in NEGATIVES + FACADE_NEGATIVES: row(Keyword=n, Criterion_Type="Campaign negative")
 for g in GROUPS:
     row(Ad_Group=g["name"], Ad_Group_Status="Enabled")
     for k in g["phrase"]: row(Ad_Group=g["name"], Keyword=k, Criterion_Type="Phrase", Status="Enabled")
@@ -132,6 +171,13 @@ def write(path, header, data):
     open(path, "w", encoding="utf-16", newline="").write(buf.getvalue())
 
 here = os.path.dirname(os.path.abspath(__file__))
+# ---------------- Fichier 3 : ajout des seuls groupes façade (sans toucher au reste de la campagne) ----------------
+names = {g["name"] for g in FACADE_GROUPS}
+rows3 = [r for r in rows if r["Ad Group"] in names] + [r for r in rows if r["Criterion Type"] == "Campaign negative" and r["Keyword"] in FACADE_NEGATIVES]
+write(os.path.join(here, "3-ajout-groupes-facade.csv"), H1, rows3)
+rows4 = [r for r in rows2 if r["Sitelink text"] in {t for t, *_ in FACADE_SITELINKS}]
+write(os.path.join(here, "4-ajout-liens-annexes-facade.csv"), H2, rows4)
+print(f"Ajout façade : {len(rows3)} lignes (2 groupes, {sum(len(g['phrase'])+len(g['exact']) for g in FACADE_GROUPS)} mots-clés, 2 annonces, {len(FACADE_NEGATIVES)} négatifs) + {len(rows4)} liens annexes")
 write(os.path.join(here, "1-campagne-google-ads-editor.csv"), H1, rows)
 write(os.path.join(here, "2-composants-google-ads-editor.csv"), H2, rows2)
 kw = sum(len(g["phrase"]) + len(g["exact"]) for g in GROUPS)
