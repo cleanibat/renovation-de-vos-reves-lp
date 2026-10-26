@@ -318,15 +318,22 @@ STYLES = [("taille", "Pierre de taille", "Blocs réguliers et joints fins, l'all
           ("moellon", "Moellon", "Pierres irrégulières, l'esprit des longères et des maisons anciennes."),
           ("seche", "Pierre sèche", "Joints creusés presque invisibles, pour un rendu rustique."),
           ("briquette", "Briquette et encadrements", "Pour souligner fenêtres, portes et chaînes d'angle.")]
-style_cards = '<div class="style-cards">' + "".join(f'<article class="style-card">{stone_svg(k)}<div><h3>{t}</h3><p>{d}</p></div></article>' for k, t, d in STYLES) + "</div>"
+# photos de finitions (Arti Pierre) ; stone_svg reste en secours si une photo manque
+def _style_visual(k, t):
+    name = f"ap-style-{k}"
+    if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "img", name + ".jpg")):
+        return (f'<picture><source type="image/webp" srcset="img/{name}.webp"><img src="img/{name}.jpg" '
+                f'alt="Enduit imitation pierre, finition {t.lower()}" width="300" height="200" class="style-photo" loading="lazy" decoding="async"></picture>')
+    return stone_svg(k)
+style_cards = '<div class="style-cards">' + "".join(f'<article class="style-card">{_style_visual(k, t)}<div><h3>{t}</h3><p>{d}</p></div></article>' for k, t, d in STYLES) + "</div>"
 
 IMITATION = dict(PAGE,
     file="enduit-imitation-pierre.html",
     lp="Imitation pierre",
     title="Enduit imitation pierre en Loire-Atlantique | La Rénovation de vos rêves",
     desc="Enduit imitation pierre sculpté à la main sur façade, soubassement, encadrements ou mur intérieur, en Loire-Atlantique et nord Vendée. Devis gratuit.",
-    hero_img="img/maison-pierre-jardin.jpg",
-    hero_alt="Maison aux murs en pierre apparente, le rendu recherché avec un enduit imitation pierre",
+    hero_img="img/ap-facade-pierre-taille.jpg",
+    hero_alt="Façade habillée d'un enduit imitation pierre de taille",
     h1="L'aspect de la pierre <em>sur votre façade</em>",
     sub="Un enduit sculpté à la main qui donne à vos murs le charme de la pierre, sans démolir ni reconstruire. En Loire-Atlantique et nord Vendée.",
     reassurance=[
@@ -356,15 +363,19 @@ IMITATION = dict(PAGE,
         ]), sid="methode", center=True)
         + cta_band("Votre façade mérite l'aspect de la pierre")
     ),
-    gallery_eyebrow="Le rendu recherché",
-    gallery_h2="L'aspect de la pierre naturelle",
-    gallery_lead="",
-    before_after=[],
+    gallery_first=True,
+    gallery_eyebrow="Exemples de rendu",
+    gallery_h2="Avant / après",
+    gallery_lead="Faites glisser le curseur pour comparer.",
+    before_after=[
+        ("img/ap-avant-1.jpg", "img/ap-apres-1.jpg", "Maison de plain-pied habillée façon pierre", "Maison de plain-pied enduite avant travaux", "La même maison habillée en enduit imitation pierre"),
+        ("img/ap-avant-2.jpg", "img/ap-apres-2.jpg", "Façade et encadrement de fenêtre façon pierre", "Façade abîmée avant travaux", "La même façade en enduit imitation pierre avec encadrement"),
+    ],
     gallery=[
-        ("img/maison-pierre-jardin.jpg", "Maison aux murs en moellons de pierre"),
-        ("img/facade-pierre-allee.jpg", "Façade en pierre le long d'une allée"),
-        ("img/mur-pierre-interieur.jpg", "Mur intérieur en pierre apparente"),
-        ("img/hero-maison-pierre-extension.jpg", "Maison en pierre et son extension"),
+        ("img/ap-pool-house.jpg", "Pool-house habillé en enduit imitation pierre"),
+        ("img/ap-longere.jpg", "Longère en enduit imitation moellon"),
+        ("img/ap-volets-bleus.jpg", "Façade en imitation pierre de taille avec volets bleus"),
+        ("img/ap-cheminee.jpg", "Mur de cheminée intérieur en imitation pierre"),
     ],
     faq=[
         ("Sur quels murs peut-on le poser ?", "Parpaing, brique, béton ou ancien enduit en bon état. S'il est dégradé, nous le purgeons avant la pose."),
@@ -383,8 +394,8 @@ RAVALEMENT = dict(PAGE,
     lp="Ravalement",
     title="Ravalement de façade et enduit en Loire-Atlantique | La Rénovation de vos rêves",
     desc="Enduit de façade sur construction neuve, ravalement et rénovation d'enduit, fissures, enduit à la chaux, en Loire-Atlantique et nord Vendée. Devis gratuit.",
-    hero_img="img/facade-pierre-allee.jpg",
-    hero_alt="Façade de maison rénovée le long d'une allée",
+    hero_img="img/rav-maison-enduite.jpg",
+    hero_alt="Maison individuelle avec façade enduite",
     h1="Ravalement de façade et enduit <em>en Loire-Atlantique</em>",
     sub="Enduit de façade sur maison neuve ou ravalement d'une façade fatiguée : nous réalisons vos enduits, du support à la finition.",
     reassurance=[
@@ -427,15 +438,15 @@ RAVALEMENT = dict(PAGE,
         ]), cls="section-sand", sid="methode", center=True)
         + cta_band("Une façade remise à neuf, du support à la finition")
     ),
-    gallery_eyebrow="Façades",
-    gallery_h2="Façades et murs en pierre",
+    gallery_eyebrow="Exemples de rendu",
+    gallery_h2="Des façades enduites, en neuf comme en rénovation",
     gallery_lead="",
     before_after=[],
     gallery=[
-        ("img/facade-pierre-allee.jpg", "Façade en pierre le long d'une allée"),
-        ("img/maison-pierre-jardin.jpg", "Maison aux murs en pierre"),
-        ("img/apres-maison.jpg", "Maison en pierre rénovée avec son extension"),
-        ("img/mur-pierre-interieur.jpg", "Mur en pierre rejointoyé"),
+        ("img/rav-pignon-blanc.jpg", "Pignon de maison avec enduit blanc"),
+        ("img/rav-maison-blanche.jpg", "Maison individuelle à façade enduite blanche"),
+        ("img/rav-echafaudage.jpg", "Ravalement de façade en cours sous échafaudage"),
+        ("img/rav-volets-verts.jpg", "Façade enduite rénovée avec volets verts"),
     ],
     reviews=[PAGE["reviews"][1], PAGE["reviews"][0], PAGE["reviews"][2], PAGE["reviews"][3]],
     faq=[
@@ -828,6 +839,17 @@ def build_lp(p):
     faq = "".join(f'<details{" open" if i == 0 else ""}><summary>{q}</summary><p>{a}</p></details>' for i, (q, a) in enumerate(p["faq"]))
     crumbs = breadcrumb(p["crumbs"]) if p["file"] != "index.html" else ""
     zone_link = f'<p class="zone-more"><a href="{href("zones-intervention.html")}">Voir toutes nos zones d\'intervention</a></p>'
+    gallery_section = f'''<section class="section section-dark" id="realisations">
+  <div class="wrap">
+    <div class="section-head center">
+      <span class="eyebrow gold">{p['gallery_eyebrow']}</span>
+      <h2>{p['gallery_h2']}</h2>
+      {f"<p class='lead'>{p['gallery_lead']}</p>" if p['gallery_lead'] else ""}
+    </div>
+    {f'<div class="ba-grid">{ba}</div>' if ba else ""}
+    <div class="gallery">{gal}</div>
+  </div>
+</section>'''
     services_section = "" if p.get("hide_services") else f'''<section class="section" id="services">
   <div class="wrap">
     <div class="section-head">
@@ -905,23 +927,14 @@ def build_lp(p):
   </div>
 </section>
 {crumbs}
+{gallery_section if p.get('gallery_first') else ''}
 {services_section}
 {p.get('local_html', '')}
 {why_section}
 
 {steps_section}
 
-<section class="section section-dark" id="realisations">
-  <div class="wrap">
-    <div class="section-head center">
-      <span class="eyebrow gold">{p['gallery_eyebrow']}</span>
-      <h2>{p['gallery_h2']}</h2>
-      {f"<p class='lead'>{p['gallery_lead']}</p>" if p['gallery_lead'] else ""}
-    </div>
-    {f'<div class="ba-grid">{ba}</div>' if ba else ""}
-    <div class="gallery">{gal}</div>
-  </div>
-</section>
+{'' if p.get('gallery_first') else gallery_section}
 
 <section class="section" id="avis">
   <div class="wrap">
