@@ -70,3 +70,8 @@ Production : https://www.larenovationdevosreves.com/ sur l'o2switch d'Aymeric (c
 ## À faire valider par le client
 - Les photos proviennent de son site actuel (photos d'illustration, probablement de banque d'images) : remplacer par des photos de chantiers réels dès que possible, en particulier sur la page Terrassement qui n'a aucune photo de terrassement.
 - Les témoignages sont repris de la page Témoignages de son site.
+
+## Provenance des photos
+- `img/ap-*` : chantiers Arti Pierre (activité d'Aymeric), présentés comme « exemples de rendu », sans lieu ni mention « nos réalisations ». À remplacer par des chantiers du client dès que possible.
+- `img/rav-*` : photos libres Pexels (licence Pexels : usage commercial gratuit, attribution facultative) — IDs 39559640, 30503925, 33117283, 37520402, 11394270.
+- Pas de photos reprises de sites de façadiers tiers (droits d'auteur).
