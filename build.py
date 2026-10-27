@@ -694,12 +694,13 @@ NAV = [("index.html", "Maçonnerie"), ("extension-maison.html", "Extension"), ("
        ("ravalement-facade.html", "Ravalement"), ("enduit-imitation-pierre.html", "Imitation pierre"),
        ("zones-intervention.html", "Zones"), ("conseils.html", "Conseils")]
 
-def header(current="", devis="#devis"):
+def header(current="", devis="#devis", menu=True):
+    # Landing pages (menu=False) : pas de menu, pour ne pas détourner le visiteur du devis. Les liens restent dans le pied de page.
     nav = "".join(f'<a href="{href(f)}"{" aria-current=" + chr(34) + "page" + chr(34) if f == current else ""}>{t}</a>' for f, t in NAV)
     return f'''<header class="header">
   <div class="wrap">
     <a class="logo" href="./" aria-label="{BRAND}, accueil"><img src="img/logo-clair.png" alt="{BRAND}" width="513" height="164"></a>
-    <nav class="main-nav" aria-label="Navigation principale">{nav}</nav>
+    {f'<nav class="main-nav" aria-label="Navigation principale">{nav}</nav>' if menu else ''}
     <div class="header-cta">
       <a class="header-phone" href="tel:{PHONE_INTL}">{I['PHONE']}<span><small>Appelez-nous</small>{PHONE_DISPLAY}</span></a>
       <a class="btn btn-primary" href="{devis}">Devis gratuit</a>
@@ -909,7 +910,7 @@ def build_lp(p):
 </section>'''
 
     body = f'''<a id="top"></a>
-{header(p.get("nav_current", p["file"]))}
+{header(p.get("nav_current", p["file"]), menu=False)}
 <main>
 <section class="hero">
   {pic(hero, p['hero_alt'], cls="hero-bg", lazy=False, hero=True)}
