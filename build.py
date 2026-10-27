@@ -461,7 +461,64 @@ RAVALEMENT = dict(PAGE,
     form_msg_ph="Type de mur, surface, problèmes constatés (fissures, décollement…), délai…",
 )
 
-PAGES = [PAGE, EXTENSION, TERRASSEMENT, RAVALEMENT, IMITATION]
+# Maîtrise d'œuvre (2026-10-27) : seule page où l'entreprise coordonne d'autres entreprises (consigne « pas de coordination
+# d'artisans » levée par Aymeric pour cette page uniquement). Toujours pas d'étude de structure ni de bureau d'études.
+MOE = dict(PAGE,
+    file="maitrise-d-oeuvre.html",
+    lp="Maîtrise d'œuvre",
+    title="Maîtrise d'œuvre en Loire-Atlantique | La Rénovation de vos rêves",
+    desc="Maître d'œuvre en Loire-Atlantique et nord Vendée : plans, permis, consultation des entreprises, suivi de chantier et réception. Devis gratuit.",
+    hero_img="img/maison-pierre-jardin.jpg",
+    hero_alt="Maison en pierre rénovée avec son jardin",
+    h1="Maîtrise d'œuvre <em>en Loire-Atlantique</em>",
+    sub="Plans, permis, choix des entreprises et suivi du chantier : nous pilotons votre projet de rénovation ou d'agrandissement, de l'idée à la réception.",
+    reassurance=[
+        ("Devis gratuit et sans engagement", "DOC"),
+        ("Visite et conseil sur place", "PIN"),
+        ("Un seul interlocuteur pour tout le projet", "USER"),
+        ("Budget et planning suivis", "CLOCK"),
+    ],
+    hide_services=True, hide_why=True, hide_zone=True,
+    local_html=(
+        lp_section("Nos missions", "Du premier croquis à la remise des clés", tiles([
+            ("HOUSEPLUS", "Plans et conception", "Relevé de l'existant, esquisses puis plans du projet, ajustés avec vous."),
+            ("SHIELD", "Démarches d'urbanisme", "Dossier de permis de construire ou de déclaration préalable, déposé en mairie."),
+            ("DOC", "Chiffrage et budget", "Consultation des entreprises, devis comparés, budget arrêté avant de démarrer."),
+            ("CLOCK", "Suivi de chantier et réception", "Planning, réunions de chantier, contrôle des travaux et levée des réserves."),
+        ]), sid="missions")
+        + lp_section("Pourquoi un maître d'œuvre", "Votre projet entre de bonnes mains", tiles([
+            ("USER", "Un seul interlocuteur", "Vous n'avez plus à gérer chaque entreprise vous-même."),
+            ("DOC", "Un budget maîtrisé", "Des devis comparés poste par poste avant de signer."),
+            ("CLOCK", "Un planning tenu", "Les corps de métier interviennent dans le bon ordre."),
+            ("SHIELD", "Un chantier contrôlé", "Chaque étape est vérifiée avant de passer à la suivante."),
+        ]), cls="section-sand", sid="avantages")
+        + lp_section("Pour quels projets ?", "Rénovation, agrandissement, transformation",
+                     '<ul class="chips">' + "".join(f"<li>{x}</li>" for x in ["Rénovation de maison", "Extension", "Surélévation", "Grange ou longère", "Aménagement de combles", "Garage transformé en pièce", "Locaux professionnels"]) + "</ul>",
+                     lead="Particuliers, professionnels et collectivités.", sid="projets", center=True)
+        + cta_band("Un seul interlocuteur, du plan à la réception")
+    ),
+    process_eyebrow="Comment ça se passe",
+    process_h2="Votre projet en 4 étapes",
+    process=[
+        ("Visite et programme", "Nous voyons les lieux, vos besoins et votre budget."),
+        ("Conception et autorisations", "Plans du projet, puis dossier de permis ou de déclaration préalable."),
+        ("Consultation des entreprises", "Devis comparés, budget et planning arrêtés avec vous."),
+        ("Suivi et réception", "Réunions de chantier jusqu'à la réception et la levée des réserves."),
+    ],
+    reviews=[PAGE["reviews"][3], PAGE["reviews"][2], PAGE["reviews"][0], PAGE["reviews"][1]],
+    faq=[
+        ("Quelle différence avec un architecte ?", "Un architecte est obligatoire pour un permis de construire si la surface de plancher totale dépasse 150 m². En dessous, le maître d'œuvre peut concevoir le projet et monter le dossier."),
+        ("Combien coûte une maîtrise d'œuvre ?", "Les honoraires dépendent des missions confiées et de l'ampleur du projet. Ils sont fixés par écrit après une visite gratuite."),
+        ("Faut-il un permis de construire ?", "Selon la surface créée et le PLU : déclaration préalable ou permis. Nous vérifions la règle de votre commune et montons le dossier."),
+        ("Réalisez-vous aussi la maçonnerie ?", "Oui : maçonnerie, gros œuvre et extension sont notre métier. Vous pouvez nous les confier dans le même projet."),
+        ("Quand faut-il vous contacter ?", "Le plus tôt possible : avant les plans, le projet s'ajuste encore facilement à votre budget."),
+    ],
+    cta_lead="Décrivez votre projet, nous vous rappelons pour convenir d'une visite.",
+    form_needs=["Rénovation complète", "Extension ou surélévation", "Transformation de grange ou de dépendance", "Aménagement de combles ou de garage", "Locaux professionnels", "Autre projet"],
+    form_msg_ph="Type de projet, surface, état actuel, budget envisagé, délai…",
+)
+
+PAGES = [PAGE, EXTENSION, TERRASSEMENT, RAVALEMENT, IMITATION, MOE]
 ZONE_SVG = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "img", "carte-zone.svg"), encoding="utf-8").read()  # généré par ads/zone_carte.py
 for _p in PAGES:
     _p["zone_map"] = True
@@ -738,7 +795,7 @@ def footer():
     </div>
     <div>
       <h3>Nos services</h3>
-      <ul class="footer-list"><li><a href="./">Maçonnerie générale</a></li><li><a href="{href('extension-maison.html')}">Extension et surélévation</a></li><li><a href="{href('terrassement.html')}">Terrassement et assainissement</a></li><li><a href="{href('ravalement-facade.html')}">Ravalement de façade et enduit</a></li><li><a href="{href('enduit-imitation-pierre.html')}">Enduit imitation pierre</a></li><li><a href="./#renovation">Rénovation clé en main</a></li></ul>
+      <ul class="footer-list"><li><a href="./">Maçonnerie générale</a></li><li><a href="{href('extension-maison.html')}">Extension et surélévation</a></li><li><a href="{href('terrassement.html')}">Terrassement et assainissement</a></li><li><a href="{href('ravalement-facade.html')}">Ravalement de façade et enduit</a></li><li><a href="{href('enduit-imitation-pierre.html')}">Enduit imitation pierre</a></li><li><a href="{href('maitrise-d-oeuvre.html')}">Maîtrise d'œuvre</a></li><li><a href="./#renovation">Rénovation clé en main</a></li></ul>
       <h3>Départements</h3>
       <ul class="footer-list"><li><a href="{href('macon-loire-atlantique.html')}">Maçon en Loire-Atlantique</a></li><li><a href="{href('macon-vendee.html')}">Maçon en Vendée</a></li></ul>
       <h3>Conseils</h3>
@@ -976,6 +1033,7 @@ SERVICE_INFO = {
     "terrassement.html": ("Terrassement", "Terrassement et assainissement individuel", "terrassement"),
     "ravalement-facade.html": ("Ravalement de façade", "Ravalement de façade et enduit", "macon"),
     "enduit-imitation-pierre.html": ("Enduit imitation pierre", "Enduit imitation pierre", "macon"),
+    "maitrise-d-oeuvre.html": ("Maîtrise d'œuvre", "Maîtrise d'œuvre", "macon"),
 }
 for p in PAGES:
     name, svc, key = SERVICE_INFO[p["file"]]
@@ -1382,7 +1440,7 @@ indexables = sorted({canonical_in(s) for f, s in out.items() if 'content="index,
 def prio(u):
     s = u[len(SITE):]
     if s == "": return "1.0"
-    if s in ("extension-maison", "terrassement", "ravalement-facade", "enduit-imitation-pierre"): return "0.9"
+    if s in ("extension-maison", "terrassement", "ravalement-facade", "enduit-imitation-pierre", "maitrise-d-oeuvre"): return "0.9"
     if s in ("macon-loire-atlantique", "macon-vendee", "zones-intervention"): return "0.8"
     if s.startswith(("macon-", "extension-maison-", "terrassement-")): return "0.7"
     return "0.5"
