@@ -7,8 +7,11 @@ import csv, io, json, math, os, sys
 
 SITE = "https://www.larenovationdevosreves.com/"
 CAMPAIGN = "Search - Rénovation de vos rêves - Loire-Atlantique"
-BUDGET_MENSUEL = 500
-BUDGET_JOUR = math.floor(BUDGET_MENSUEL / 30.4 * 100) / 100   # Google plafonne le mois à 30,4 × budget quotidien : 16,44 € → 499,78 €
+BUDGET_MENSUEL = 700                                   # 500 € jusqu'au 29/10/2026, puis 700 € (demande d'Aymeric)
+BUDGET_JOUR = math.floor(BUDGET_MENSUEL / 30.4 * 100) / 100   # Google plafonne le mois à 30,4 × budget quotidien : 23,02 € → 699,81 €
+# Campagne séparée pour la maîtrise d'œuvre (2026-10-29) : 10 €/jour, soit 304 €/mois au plus
+MOE_CAMPAIGN = "Search - Maîtrise d'œuvre - Loire-Atlantique"
+MOE_BUDGET_JOUR = 10.00
 STATUS = "Enabled"                                     # « Paused » pour importer sans diffuser
 # Rayons qui se chevauchent, calculés par ads/zone_rayons.py sur les 152 communes du secteur (geo.api.gouv.fr) :
 # chaque commune du secteur est couverte avec 2,5 km de marge, la population hors secteur touchée est minimisée.
@@ -90,7 +93,7 @@ FACADE_GROUPS = [
 ]
 GROUPS += FACADE_GROUPS
 
-# Groupe maîtrise d'œuvre ajouté le 2026-10-27 (page /maitrise-d-oeuvre)
+# Groupe maîtrise d'œuvre (page /maitrise-d-oeuvre), dans sa propre campagne MOE_CAMPAIGN
 MOE_GROUPS = [
   dict(name="Maîtrise d'œuvre", url=SITE + "maitrise-d-oeuvre", path=("maitrise-oeuvre", "devis-gratuit"),
     phrase=["maître d'œuvre", "maîtrise d'œuvre", "maître d'œuvre nantes", "maître d'œuvre loire atlantique",
@@ -108,7 +111,6 @@ MOE_GROUPS = [
                   "Visite sur place et devis écrit détaillé, gratuit et sans engagement. Appelez-nous.",
                   "Intervention en Loire-Atlantique, sur le littoral, la presqu'île et le nord Vendée."]),
 ]
-GROUPS += MOE_GROUPS
 # études et métier (recherches d'emploi ou de cours), documents types
 MOE_NEGATIVES = ["devenir", "bts", "école", "diplôme", "modèle", "loi mop", "cctp", "dce"]
 # bricolage / produits pour l'imitation pierre (achats, pas des chantiers)
@@ -129,8 +131,15 @@ SITELINKS = [("Maçonnerie générale", "Murs, dalles, ouvertures", "Neuf et rep
 FACADE_SITELINKS = [("Ravalement de façade", "Enduit neuf ou rénovation", "Fissures, chaux, rejointoiement", SITE + "ravalement-facade"),
                     ("Enduit imitation pierre", "Sculpté à la main", "Façade, encadrements, intérieur", SITE + "enduit-imitation-pierre")]
 SITELINKS += FACADE_SITELINKS
-MOE_SITELINKS = [("Maîtrise d'œuvre", "Plans, permis, entreprises", "Suivi de chantier, réception", SITE + "maitrise-d-oeuvre")]
-SITELINKS += MOE_SITELINKS
+# la campagne principale n'achète pas les recherches de maîtrise d'œuvre : elles vont à la campagne dédiée
+MAIN_NEGATIVES = ["maître d'œuvre", "maîtrise d'œuvre", "maitre d'oeuvre", "maitrise d'oeuvre"]
+MOE_SITELINKS = [("Nos missions", "Plans, permis, entreprises", "Suivi de chantier, réception", SITE + "maitrise-d-oeuvre#missions"),
+                 ("Comment ça se passe", "Votre projet en 4 étapes", "De la visite à la réception", SITE + "maitrise-d-oeuvre#methode"),
+                 ("Extension et surélévation", "Plain-pied, étage, garage", "Du gros œuvre aux finitions", SITE + "extension.html"),
+                 ("Demander un devis", "Visite sur place gratuite", "Rappel rapide", SITE + "maitrise-d-oeuvre#devis")]
+MOE_CALLOUTS = ["Devis gratuit", "Visite sur place", "Joignables 7 j/7", "Un seul interlocuteur", "8 ans d'expérience",
+                "Particuliers et pros", "Budget suivi"]
+MOE_SNIPPET = ("Services", ["Plans", "Permis de construire", "Consultation", "Suivi de chantier", "Réception des travaux"])
 CALLOUTS = ["Devis gratuit", "Visite sur place", "Joignables 7 j/7", "Un seul interlocuteur", "8 ans d'expérience",
             "Chantier rendu propre", "Particuliers et pros", "Rénovation clé en main"]
 SNIPPET = ("Services", ["Maçonnerie", "Extension", "Surélévation", "Terrassement", "Assainissement", "Rénovation clé en main"])
@@ -141,16 +150,16 @@ errors = []
 def lim(txt, n, what):
     if len(txt) > n: errors.append(f"{what} > {n} caractères ({len(txt)}) : {txt}")
     if "!" in txt and what.startswith("Titre"): errors.append(f"Point d'exclamation interdit dans un titre : {txt}")
-for g in GROUPS:
+for g in GROUPS + MOE_GROUPS:
     if len(g["headlines"]) != 15 or len(set(g["headlines"])) != 15: errors.append(f"{g['name']} : il faut 15 titres distincts")
     if len(g["descriptions"]) != 4: errors.append(f"{g['name']} : il faut 4 descriptions")
     for h in g["headlines"]: lim(h, 30, f"Titre {g['name']}")
     for d in g["descriptions"]: lim(d, 90, f"Description {g['name']}")
     for p in g["path"]: lim(p, 15, f"Chemin {g['name']}")
     for k in g["phrase"] + g["exact"]: lim(k, 80, "Mot-clé")
-for t, d1, d2, _ in SITELINKS: lim(t, 25, "Lien annexe"); lim(d1, 35, "Description lien"); lim(d2, 35, "Description lien")
-for c in CALLOUTS: lim(c, 25, "Accroche")
-for v in SNIPPET[1]: lim(v, 25, "Extrait")
+for t, d1, d2, _ in SITELINKS + MOE_SITELINKS: lim(t, 25, "Lien annexe"); lim(d1, 35, "Description lien"); lim(d2, 35, "Description lien")
+for c in CALLOUTS + MOE_CALLOUTS: lim(c, 25, "Accroche")
+for v in SNIPPET[1] + MOE_SNIPPET[1]: lim(v, 25, "Extrait")
 if errors: sys.exit("\n".join(errors))
 
 # ---------------- Fichier 1 : campagne, zone, groupes, mots-clés, annonces ----------------
@@ -158,37 +167,45 @@ H1 = ["Campaign", "Campaign Type", "Networks", "Budget", "Budget type", "Bid Str
       "Targeting method", "Exclusion method", "Campaign Status", "Location", "Ad Group", "Ad Group Status",
       "Keyword", "Criterion Type", "Status", "Ad type"] + [f"Headline {i}" for i in range(1, 16)] + \
      [f"Description {i}" for i in range(1, 5)] + ["Path 1", "Path 2", "Final URL"]
-rows = []
-def row(**kw):
-    r = {h: "" for h in H1}; r["Campaign"] = CAMPAIGN
-    for k, v in kw.items(): r[k.replace("_", " ")] = v
-    rows.append(r)
-row(Campaign_Type="Search", Networks="Google search", Budget=f"{BUDGET_JOUR:.2f}", Budget_type="Daily",
-    Bid_Strategy_Type="Maximize conversions", Languages="fr", Targeting_method="Location of presence",
-    Exclusion_method="Location of presence", Campaign_Status=STATUS)
-for lat, lon, r in GEO: row(Location=f"({r}km:{lat:.6f}:{lon:.6f})")
-for n in NEGATIVES + FACADE_NEGATIVES + MOE_NEGATIVES: row(Keyword=n, Criterion_Type="Campaign negative")
-for g in GROUPS:
-    row(Ad_Group=g["name"], Ad_Group_Status="Enabled")
-    for k in g["phrase"]: row(Ad_Group=g["name"], Keyword=k, Criterion_Type="Phrase", Status="Enabled")
-    for k in g["exact"]: row(Ad_Group=g["name"], Keyword=k, Criterion_Type="Exact", Status="Enabled")
-    ad = {f"Headline {i+1}": h for i, h in enumerate(g["headlines"])}
-    ad.update({f"Description {i+1}": d for i, d in enumerate(g["descriptions"])})
-    r = {h: "" for h in H1}; r.update(ad); r.update({"Campaign": CAMPAIGN, "Ad Group": g["name"], "Ad type": "Responsive search ad",
-        "Path 1": g["path"][0], "Path 2": g["path"][1], "Final URL": g["url"], "Status": "Enabled"}); rows.append(r)
+def campaign_rows(name, budget, groups, negatives):
+    out = []
+    def row(**kw):
+        r = {h: "" for h in H1}; r["Campaign"] = name
+        for k, v in kw.items(): r[k.replace("_", " ")] = v
+        out.append(r)
+    row(Campaign_Type="Search", Networks="Google search", Budget=f"{budget:.2f}", Budget_type="Daily",
+        Bid_Strategy_Type="Maximize conversions", Languages="fr", Targeting_method="Location of presence",
+        Exclusion_method="Location of presence", Campaign_Status=STATUS)
+    for lat, lon, r in GEO: row(Location=f"({r}km:{lat:.6f}:{lon:.6f})")
+    for n in negatives: row(Keyword=n, Criterion_Type="Campaign negative")
+    for g in groups:
+        row(Ad_Group=g["name"], Ad_Group_Status="Enabled")
+        for k in g["phrase"]: row(Ad_Group=g["name"], Keyword=k, Criterion_Type="Phrase", Status="Enabled")
+        for k in g["exact"]: row(Ad_Group=g["name"], Keyword=k, Criterion_Type="Exact", Status="Enabled")
+        ad = {f"Headline {i+1}": h for i, h in enumerate(g["headlines"])}
+        ad.update({f"Description {i+1}": d for i, d in enumerate(g["descriptions"])})
+        row(**{k.replace(" ", "_"): v for k, v in ad.items()}, Ad_Group=g["name"], Ad_type="Responsive search ad",
+            Path_1=g["path"][0], Path_2=g["path"][1], Final_URL=g["url"], Status="Enabled")
+    return out
+rows = campaign_rows(CAMPAIGN, BUDGET_JOUR, GROUPS, NEGATIVES + FACADE_NEGATIVES + MAIN_NEGATIVES)
+moe_rows = campaign_rows(MOE_CAMPAIGN, MOE_BUDGET_JOUR, MOE_GROUPS, NEGATIVES + MOE_NEGATIVES)
 
 # ---------------- Fichier 2 : composants (liens annexes, accroches, extraits, appel) ----------------
 H2 = ["Campaign", "Sitelink text", "Description line 1", "Description line 2", "Final URL", "Callout text",
       "Header", "Snippet values", "Phone Number", "Country code", "Status"]
-rows2 = []
-def row2(**kw):
-    r = {h: "" for h in H2}; r["Campaign"] = CAMPAIGN; r["Status"] = "Enabled"
-    for k, v in kw.items(): r[k.replace("_", " ")] = v
-    rows2.append(r)
-for t, d1, d2, u in SITELINKS: row2(Sitelink_text=t, Description_line_1=d1, Description_line_2=d2, Final_URL=u)
-for c in CALLOUTS: row2(Callout_text=c)
-row2(Header=SNIPPET[0], Snippet_values=";".join(SNIPPET[1]))
-row2(Phone_Number=PHONE[0], Country_code=PHONE[1])
+def component_rows(name, sitelinks, callouts, snippet):
+    out = []
+    def row2(**kw):
+        r = {h: "" for h in H2}; r["Campaign"] = name; r["Status"] = "Enabled"
+        for k, v in kw.items(): r[k.replace("_", " ")] = v
+        out.append(r)
+    for t, d1, d2, u in sitelinks: row2(Sitelink_text=t, Description_line_1=d1, Description_line_2=d2, Final_URL=u)
+    for c in callouts: row2(Callout_text=c)
+    row2(Header=snippet[0], Snippet_values=";".join(snippet[1]))
+    row2(Phone_Number=PHONE[0], Country_code=PHONE[1])
+    return out
+rows2 = component_rows(CAMPAIGN, SITELINKS, CALLOUTS, SNIPPET)
+moe_rows2 = component_rows(MOE_CAMPAIGN, MOE_SITELINKS, MOE_CALLOUTS, MOE_SNIPPET)
 
 def write(path, header, data):
     buf = io.StringIO(); w = csv.DictWriter(buf, fieldnames=header, delimiter="\t", lineterminator="\r\n"); w.writeheader(); w.writerows(data)
@@ -202,13 +219,13 @@ write(os.path.join(here, "3-ajout-groupes-facade.csv"), H1, rows3)
 rows4 = [r for r in rows2 if r["Sitelink text"] in {t for t, *_ in FACADE_SITELINKS}]
 write(os.path.join(here, "4-ajout-liens-annexes-facade.csv"), H2, rows4)
 print(f"Ajout façade : {len(rows3)} lignes (2 groupes, {sum(len(g['phrase'])+len(g['exact']) for g in FACADE_GROUPS)} mots-clés, 2 annonces, {len(FACADE_NEGATIVES)} négatifs) + {len(rows4)} liens annexes")
-# ---------------- Fichiers 5 et 6 : ajout du seul groupe maîtrise d'œuvre ----------------
-names = {g["name"] for g in MOE_GROUPS}
-rows5 = [r for r in rows if r["Ad Group"] in names] + [r for r in rows if r["Criterion Type"] == "Campaign negative" and r["Keyword"] in MOE_NEGATIVES]
-write(os.path.join(here, "5-ajout-groupe-maitrise-oeuvre.csv"), H1, rows5)
-rows6 = [r for r in rows2 if r["Sitelink text"] in {t for t, *_ in MOE_SITELINKS}]
-write(os.path.join(here, "6-ajout-lien-annexe-maitrise-oeuvre.csv"), H2, rows6)
-print(f"Ajout maîtrise d'œuvre : {len(rows5)} lignes (1 groupe, {sum(len(g['phrase'])+len(g['exact']) for g in MOE_GROUPS)} mots-clés, 1 annonce, {len(MOE_NEGATIVES)} négatifs) + {len(rows6)} lien annexe")
+# ---------------- Fichiers 5 et 6 : nouvelle campagne maîtrise d'œuvre + budget et négatifs de la campagne principale ----------------
+main_update = [rows[0]] + [r for r in rows if r["Criterion Type"] == "Campaign negative" and r["Keyword"] in MAIN_NEGATIVES]
+write(os.path.join(here, "5-campagne-maitrise-oeuvre.csv"), H1, moe_rows + main_update)
+write(os.path.join(here, "6-composants-maitrise-oeuvre.csv"), H2, moe_rows2)
+print(f"Campagne maîtrise d'œuvre : {MOE_BUDGET_JOUR:.2f} €/jour (plafond mensuel {MOE_BUDGET_JOUR*30.4:.2f} €), {len(moe_rows)} lignes, "
+      f"{sum(len(g['phrase'])+len(g['exact']) for g in MOE_GROUPS)} mots-clés, {len(NEGATIVES + MOE_NEGATIVES)} négatifs, {len(moe_rows2)} composants ; "
+      f"campagne principale : budget {BUDGET_JOUR:.2f} €/jour et {len(MAIN_NEGATIVES)} négatifs maîtrise d'œuvre")
 write(os.path.join(here, "1-campagne-google-ads-editor.csv"), H1, rows)
 write(os.path.join(here, "2-composants-google-ads-editor.csv"), H2, rows2)
 kw = sum(len(g["phrase"]) + len(g["exact"]) for g in GROUPS)
